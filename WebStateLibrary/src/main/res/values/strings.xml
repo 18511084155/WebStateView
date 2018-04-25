@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Library</string>
+    <string name="auth_success">认证成功，稍后将自动跳转</string>
+    <string name="auth_failure">认证失败，请稍后重试</string>
+</resources>

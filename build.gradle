@@ -1,0 +1,29 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.3'
+        //添加上传到公共的JCenter仓库所需插件
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+    }
+}
+
+
+
+allprojects {
+    repositories {
+        jcenter()
+        maven{url "http://192.168.29.8:8081/repository/credit-wallet/"}
+    }
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('encoding', 'UTF-8')
+    }
+}
+
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
