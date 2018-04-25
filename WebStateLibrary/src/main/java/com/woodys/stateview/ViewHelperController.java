@@ -121,10 +121,21 @@ public class ViewHelperController{
         mSuccessTick.startTickAnim();
     }
 
+    public boolean isShowLoadingView(){
+        return getCurrentView()==mLoadingView;
+    }
+
+    public void setLoadingView(int value){
+        if(isShowLoadingView()){
+            CircleProgressView mCircleView = (CircleProgressView) mLoadingView.findViewById(R.id.circleView);
+            if(null!=mCircleView){
+                mCircleView.setValueAnimated(value);
+            }
+        }
+    }
     
     public void showLoadingView() {
         helper.showLayout(mLoadingView);
-
         final CircleProgressView mCircleView = (CircleProgressView) mLoadingView.findViewById(R.id.circleView);
         mCircleView.setOnProgressChangedListener(new CircleProgressView.OnProgressChangedListener() {
             @Override

@@ -1,8 +1,10 @@
 package com.woodys.demo;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.webkit.JsPromptResult;
@@ -10,9 +12,14 @@ import android.webkit.JsResult;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.financial.quantgroup.v2.bus.RxBus;
+import com.woodys.demo.entity.StateViewType;
 import com.woodys.stateview.ViewHelperController;
 
 import cn.pedant.SafeWebViewBridge.InjectedChromeClient;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 
 
 public class WebActivity extends Activity {
@@ -67,14 +74,15 @@ public class WebActivity extends Activity {
             }
         });
 
-
         String url = getIntent().getStringExtra("url");
-        if(null==url) url = "http://192.168.28.30:8080/test/index.html";
-        //webView.loadUrl(url);
+        if(null==url) url = "file:///android_asset/index.html";
+        webView.loadUrl(url);
 
-        webView.loadUrl("file:///android_asset/test.html");
-
+        //webView.loadUrl("file:///android_asset/index.html");
         initViewHelperController();
+
+
+
     }
 
     private void initViewHelperController(){
@@ -103,6 +111,34 @@ public class WebActivity extends Activity {
                 helperController.showSuccessView();
             }
         });
+
+
+        RxBus.INSTANCE.subscribe(this, StateViewType.class, new Function1<StateViewType, Unit>() {
+            @Override
+            public Unit invoke(StateViewType item) {
+                if(null!=item){
+                    switch (item.type){
+                        case StateViewType.LAYOUT_CONTENT_TYPE:
+                            helperController.restore();
+                            break;
+                        case StateViewType.LAYOUT_LOADING_TYPE:
+                            if (helperController.isShowLoadingView()){
+                                helperController.setLoadingView(item.value);
+                            }else {
+                                helperController.showLoadingView();
+                            }
+                            break;
+                        case StateViewType.LAYOUT_ERROR_TYPE:
+                            helperController.showErrorView();
+                            break;
+                        case StateViewType.LAYOUT_SUCCESS_TYPE:
+                            helperController.showSuccessView();
+                            break;
+                    }
+                }
+                return null;
+            }
+        });
     }
 
 
@@ -115,6 +151,12 @@ public class WebActivity extends Activity {
         @Override
         public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
             // to do your work
+            new AlertDialog.Builder(WebActivity.this).setTitle("温馨提示").setMessage(message).setCancelable(true).setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).create().show();
             // ...
             return super.onJsAlert(view, url, message, result);
         }

@@ -21,6 +21,8 @@ import android.telephony.TelephonyManager;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import com.financial.quantgroup.v2.bus.RxBus;
+import com.woodys.demo.entity.StateViewType;
 import com.woodys.demo.util.TaskExecutor;
 
 import org.json.JSONException;
@@ -207,9 +209,6 @@ public class HostJsScope {
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuth(WebView webView, JSONObject json) {
-        String msg = passJson2Java(webView,json);
-        //alert(webView, String.valueOf(msg));
-
         Context viewContext = webView.getContext();
         Intent intent = new Intent(viewContext, WebActivity.class);
         try {
@@ -230,8 +229,14 @@ public class HostJsScope {
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuthProgress(WebView webView, JSONObject json) {
-        String msg = passJson2Java(webView,json);
-        alert(webView, String.valueOf(msg));
+        try {
+            //获取进度操作信息
+            int progress = json.getInt("progress");
+            alert(webView, String.valueOf(progress));
+            RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_LOADING_TYPE,progress));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -243,6 +248,8 @@ public class HostJsScope {
     public static void webViewAuthFailure(WebView webView) {
         String msg = "网页爬虫授权失败";
         alert(webView, String.valueOf(msg));
+        //认证成功
+        RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_ERROR_TYPE,0));
     }
 
 
@@ -256,6 +263,14 @@ public class HostJsScope {
     public static void webViewAuthCollectionResults(WebView webView, JSONObject json) {
         String msg = passJson2Java(webView,json);
         alert(webView, String.valueOf(msg));
+
+        try {
+            String data = json.getString("data");
+            //认证成功
+            //RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_SUCCESS_TYPE,0));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -267,12 +282,12 @@ public class HostJsScope {
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuthSetUserAgent(WebView webView, JSONObject json) {
-        String msg = passJson2Java(webView,json);
-        alert(webView, String.valueOf(msg));
         try {
-            // 修改ua使得web端正确判断
-            String ua = webView.getSettings().getUserAgentString();
-            webView.getSettings().setUserAgentString(json.getString("userAgent"));
+            //修改ua使得web端正确判断
+            String url = json.getString("url");
+            String userAgent = json.getString("userAgent");
+            webView.getSettings().setUserAgentString(userAgent);
+            webView.loadUrl(url);
         } catch (JSONException e) {
             e.printStackTrace();
         }
