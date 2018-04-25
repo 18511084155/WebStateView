@@ -8,15 +8,6 @@ android {
         versionCode 3
         versionName "1.2"
     }
-    buildTypes {
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-            minifyEnabled false
-        }
-    }
 }
 
 dependencies {
@@ -24,4 +15,5 @@ dependencies {
     compile 'com.woodys.statelayout:stateframe:1.0.0'
 
     compile 'com.google.code.gson:gson:2.3'
+
 }

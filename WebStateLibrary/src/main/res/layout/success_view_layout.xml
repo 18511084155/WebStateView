@@ -24,7 +24,7 @@
             android:layout_height="match_parent"
             android:background="@drawable/success_circle" />
 
-        <com.woodys.stateview.widget.SuccessTickView
+        <com.woodys.stateview.widget.SuccessView
             android:id="@+id/success_tick"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

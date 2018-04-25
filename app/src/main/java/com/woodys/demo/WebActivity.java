@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import com.woodys.stateview.ViewHelperController;
 
 import cn.pedant.SafeWebViewBridge.InjectedChromeClient;
 
@@ -71,7 +73,38 @@ public class WebActivity extends Activity {
         //webView.loadUrl(url);
 
         webView.loadUrl("file:///android_asset/test.html");
+
+        initViewHelperController();
     }
+
+    private void initViewHelperController(){
+        final ViewHelperController helperController= ViewHelperController.createCaseViewHelperController(webView);
+        findViewById(R.id.text1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                helperController.restore();
+            }
+        });
+        findViewById(R.id.text2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                helperController.showLoadingView();
+            }
+        });
+        findViewById(R.id.text3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                helperController.showErrorView();
+            }
+        });
+        findViewById(R.id.text4).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                helperController.showSuccessView();
+            }
+        });
+    }
+
 
     public class CustomChromeClient extends InjectedChromeClient {
 

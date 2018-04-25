@@ -1,11 +1,21 @@
 package com.woodys.stateview;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
-import com.woodys.stateview.R;
 import com.woodys.statelayout.OverlapVaryViewHelper;
 import com.woodys.statelayout.ReplaceVaryViewHelper;
 import com.woodys.statelayout.interfaces.IVaryViewHelper;
+import com.woodys.stateview.circleprogress.AnimationState;
+import com.woodys.stateview.circleprogress.AnimationStateChangedListener;
+import com.woodys.stateview.circleprogress.CircleProgressView;
+import com.woodys.stateview.circleprogress.TextMode;
+import com.woodys.stateview.widget.OptAnimationLoader;
+import com.woodys.stateview.widget.SuccessView;
 
 
 /**
@@ -107,16 +117,66 @@ public class ViewHelperController{
     
     public void showSuccessView() {
         helper.showLayout(mSuccessView);
+        SuccessView mSuccessTick = (SuccessView)mSuccessView.findViewById(R.id.success_tick);
+        mSuccessTick.startTickAnim();
     }
 
     
     public void showLoadingView() {
         helper.showLayout(mLoadingView);
+
+        final CircleProgressView mCircleView = (CircleProgressView) mLoadingView.findViewById(R.id.circleView);
+        mCircleView.setOnProgressChangedListener(new CircleProgressView.OnProgressChangedListener() {
+            @Override
+            public void onProgressChanged(float value) {
+                //Log.d(TAG, "Progress Changed: " + value);
+            }
+        });
+
+        //this example shows how to show a loading text if it is in spinning mode, and the current percent value otherwise.
+        mCircleView.setShowTextWhileSpinning(true); // Show/hide text in spinning mode
+        mCircleView.setText("loading");
+        mCircleView.setOnAnimationStateChangedListener(
+                new AnimationStateChangedListener() {
+                    @Override
+                    public void onAnimationStateChanged(AnimationState _animationState) {
+                        switch (_animationState) {
+                            case IDLE:
+                            case ANIMATING:
+                            case START_ANIMATING_AFTER_SPINNING:
+                                mCircleView.setTextMode(TextMode.PERCENT); // show percent if not spinning
+                                mCircleView.setUnitVisible(true);
+                                break;
+                            case SPINNING:
+                                mCircleView.setTextMode(TextMode.TEXT); // show text while spinning
+                                mCircleView.setUnitVisible(false);
+                            case END_SPINNING:
+                                break;
+                            case END_SPINNING_START_ANIMATING:
+                                break;
+
+                        }
+                    }
+                }
+        );
+
+        mCircleView.setValue(0);
+        mCircleView.spin();
     }
 
     
     public void showErrorView() {
         helper.showLayout(mErrorView);
+        Context context = mErrorView.getContext();
+        Animation mErrorInAnim = OptAnimationLoader.loadAnimation(context, R.anim.error_frame_in);
+        AnimationSet mErrorXInAnim = (AnimationSet)OptAnimationLoader.loadAnimation(context, R.anim.error_x_in);
+
+        FrameLayout mErrorFrame = (FrameLayout)mErrorView.findViewById(R.id.error_frame);
+        ImageView mErrorX = (ImageView)mErrorFrame.findViewById(R.id.error_x);
+
+        mErrorFrame.setVisibility(View.VISIBLE);
+        mErrorFrame.startAnimation(mErrorInAnim);
+        mErrorX.startAnimation(mErrorXInAnim);
     }
 
 

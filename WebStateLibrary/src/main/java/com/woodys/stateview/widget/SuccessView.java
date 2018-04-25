@@ -12,7 +12,7 @@ import android.view.animation.Transformation;
 import com.woodys.stateview.R;
 
 
-public class SuccessTickView extends View {
+public class SuccessView extends View {
     private float mDensity = -1;
     private Paint mPaint;
     private final float CONST_RADIUS = dip2px(1.2f);
@@ -27,12 +27,12 @@ public class SuccessTickView extends View {
     private float mRightRectWidth;
     private boolean mLeftRectGrowMode;
 
-    public SuccessTickView(Context context) {
+    public SuccessView(Context context) {
         super(context);
         init();
     }
 
-    public SuccessTickView(Context context, AttributeSet attrs){
+    public SuccessView(Context context, AttributeSet attrs){
         super(context,attrs);
         init();
     }

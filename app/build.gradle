@@ -38,5 +38,4 @@ dependencies {
     compile 'cn.pedant.safewebviewbridge:library:1.4'
     compile 'com.woodys.libsocket:socketclient:1.0.0'
     compile 'com.woodys.devicelib:devicesdk:1.0.0'
-
 }
