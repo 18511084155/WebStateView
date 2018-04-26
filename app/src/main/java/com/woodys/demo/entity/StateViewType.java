@@ -13,6 +13,9 @@ public class StateViewType {
     //成功type
     public static final int LAYOUT_SUCCESS_TYPE = 4;
 
+    //空页面type
+    public static final int LAYOUT_EMPTY_TYPE = 5;
+
     public int type;
     public int value;
 

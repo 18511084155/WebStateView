@@ -6,6 +6,28 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="titleBarStyle">@style/MyTitleBar</item>
+        <item name="titleBarBackgroundColor">@android:color/white</item>
+        <item name="titleBarSize">48dp</item>
+    </style>
+
+    <style name="MyTitleBar">
+        <item name="tb_titleDrawable">@drawable/ic_arrow_back_black</item>
+        <item name="tb_titleTextColor">@color/text_color</item>
+        <item name="tb_centerTextColor">@color/text_color</item>
+        <item name="tb_centerTextSize">16sp</item>
+        <item name="tb_titleTextSize">16sp</item>
+        <item name="tb_menuTextColor">@color/text_color</item>
+        <item name="tb_menuTextSize">16sp</item>
+        <item name="tb_itemSelector">@drawable/menu_item_selector</item>
+        <item name="tb_underDivideDrawable">@drawable/base_action_bar_shadow</item>
+        <item name="tb_underDivideSize">2dp</item>
+        <item name="tb_itemHorizontalPadding">12dp</item>
+        <item name="tb_imageItemVerticalPadding">12dp</item>
+        <item name="tb_strategy">com.quant.titlebar.strategy.AndroidStrategy</item>
+        <item name="tb_indeterminateColor">@color/colorPrimary</item>
+        <item name="tb_initSystemBar">false</item>
     </style>
 
 </resources>

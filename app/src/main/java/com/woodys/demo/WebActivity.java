@@ -2,6 +2,7 @@ package com.woodys.demo;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -17,12 +18,19 @@ import com.financial.quantgroup.v2.bus.RxBus;
 import com.woodys.demo.entity.StateViewType;
 import com.woodys.stateview.ViewHelperController;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import cn.pedant.SafeWebViewBridge.InjectedChromeClient;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
 
 public class WebActivity extends Activity {
+    public static final int REFRESH_AUTH_STATUS_CODE = 0x0010;
     WebView webView = null;
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,78 +77,41 @@ public class WebActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                String javascript = getIntent().getStringExtra("javascript");
-                if(!TextUtils.isEmpty(javascript)) webView.loadUrl("javascript:" + javascript);
             }
         });
 
-        String url = getIntent().getStringExtra("url");
-        if(null==url) url = "file:///android_asset/index.html";
-        webView.loadUrl(url);
+        String url = "http://192.168.28.30:8080/test/index.html";
+        //webView.loadUrl(url);
 
-        //webView.loadUrl("file:///android_asset/index.html");
-        initViewHelperController();
-
-
+        webView.loadUrl("file:///android_asset/index.html");
 
     }
 
-    private void initViewHelperController(){
-        final ViewHelperController helperController= ViewHelperController.createCaseViewHelperController(webView);
-        findViewById(R.id.text1).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                helperController.restore();
-            }
-        });
-        findViewById(R.id.text2).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                helperController.showLoadingView();
-            }
-        });
-        findViewById(R.id.text3).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                helperController.showErrorView();
-            }
-        });
-        findViewById(R.id.text4).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                helperController.showSuccessView();
-            }
-        });
 
-
-        RxBus.INSTANCE.subscribe(this, StateViewType.class, new Function1<StateViewType, Unit>() {
-            @Override
-            public Unit invoke(StateViewType item) {
-                if(null!=item){
-                    switch (item.type){
-                        case StateViewType.LAYOUT_CONTENT_TYPE:
-                            helperController.restore();
-                            break;
-                        case StateViewType.LAYOUT_LOADING_TYPE:
-                            if (helperController.isShowLoadingView()){
-                                helperController.setLoadingView(item.value);
-                            }else {
-                                helperController.showLoadingView();
-                            }
-                            break;
-                        case StateViewType.LAYOUT_ERROR_TYPE:
-                            helperController.showErrorView();
-                            break;
-                        case StateViewType.LAYOUT_SUCCESS_TYPE:
-                            helperController.showSuccessView();
-                            break;
-                    }
-                }
-                return null;
-            }
-        });
+    /**
+     * 网页爬虫授权完成后返回上级页面刷新状态
+     */
+    private void refreshAuthStatus(){
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("event", "webViewRefreshAuthStatus");
+            Map<String,String> stringMap = new HashMap<String,String>();
+            stringMap.put("type","TAOBAO");
+            jsonObject.put("data",stringMap);
+            webView.loadUrl("javascript:webViewRefreshAuthStatus(" + jsonObject + ")");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+        if(REFRESH_AUTH_STATUS_CODE==requestCode && resultCode==RESULT_OK ){
+            //注入js代码
+            refreshAuthStatus();
+        }
+    }
 
     public class CustomChromeClient extends InjectedChromeClient {
 

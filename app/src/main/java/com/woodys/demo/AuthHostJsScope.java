@@ -37,7 +37,7 @@ import cn.pedant.SafeWebViewBridge.JsCallback;
 /**
  * HostJsScope中需要被JS调用的函数，必须定义成public static，且必须包含WebView这个参数
  */
-public class HostJsScope {
+public class AuthHostJsScope {
     /**
      * 短暂气泡提醒
      * @param webView 浏览器
@@ -202,26 +202,81 @@ public class HostJsScope {
 
 
     /**
-     * 网页爬虫授权
+     * 网页爬虫授权进度
      *
      * @param webView 浏览器
      * @param json   传入的JSON对象
      * @return 返回对象的第一个键值对
      */
-    public static void webViewAuth(WebView webView, JSONObject json) {
-        Context viewContext = webView.getContext();
-        Intent intent = new Intent(viewContext, AuthWebActivity.class);
+    public static void webViewAuthProgress(WebView webView, JSONObject json) {
         try {
-            intent.putExtra("type",json.getString("type"));
-            intent.putExtra("url",json.getString("url"));
-            intent.putExtra("javascript",json.getString("javascriptCode"));
-            intent.putExtra("userAgent",json.getString("userAgent"));
-            intent.putExtra("returnUrl",json.getString("returnUrl"));
+            //获取进度操作信息
+            int progress = json.getInt("progress");
+            RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_LOADING_TYPE,progress));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        ((Activity)viewContext).startActivityForResult(intent,WebActivity.REFRESH_AUTH_STATUS_CODE);
     }
 
+
+    /**
+     * 网页爬虫授权失败
+     *
+     * @param webView 浏览器
+     * "errorCode":"0001" //0001密码错误   0002采集错误
+     */
+    public static void webViewAuthFailure(WebView webView, JSONObject json) {
+        try {
+            String errorCode = json.getString("errorCode");
+            if("0002".equals(errorCode)){
+                //认证失败
+                RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_ERROR_TYPE,0));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+    /**
+     * 网页爬虫授权采集结果
+     *
+     * @param webView 浏览器
+     * @param json   传入的JSON对象
+     * @return 返回对象的第一个键值对
+     */
+    public static void webViewAuthCollectionResults(WebView webView, JSONObject json) {
+        String msg = passJson2Java(webView,json);
+        //alert(webView, String.valueOf(msg));
+
+        try {
+            String data = json.getString("data");
+            //认证成功
+            //RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_SUCCESS_TYPE,0));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 设置webview的userAgent
+     *
+     * @param webView 浏览器
+     * @param json   传入的JSON对象
+     * @return 返回对象的第一个键值对
+     */
+    public static void webViewAuthSetUserAgent(WebView webView, JSONObject json) {
+        try {
+            //修改ua使得web端正确判断
+            String url = json.getString("url");
+            String userAgent = json.getString("userAgent");
+            webView.getSettings().setUserAgentString(userAgent);
+            webView.loadUrl(url);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }

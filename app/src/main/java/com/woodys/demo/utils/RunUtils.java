@@ -1,4 +1,4 @@
-package com.woodys.demo.util;
+package com.woodys.demo.utils;
 
 import android.text.TextUtils;
 

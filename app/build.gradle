@@ -51,5 +51,9 @@ dependencies {
     compile 'io.reactivex:rxjava:1.1.6'
     compile 'io.reactivex:rxandroid:1.1.0'
 
+    compile 'com.cz.titlebar:titlebar:1.2.6'
+
+    compile 'com.cz.widget:widget:1.5.1'
+
 
 }

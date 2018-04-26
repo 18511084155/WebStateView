@@ -5,7 +5,7 @@
  * Time: 上午10:31
  * Copyright: Copyright (c) 2013
  */
-package com.woodys.demo.util;
+package com.woodys.demo.utils;
 
 import android.os.Handler;
 import android.os.Looper;

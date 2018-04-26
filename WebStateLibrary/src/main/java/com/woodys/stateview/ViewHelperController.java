@@ -30,6 +30,7 @@ public class ViewHelperController{
     public View mLoadingView; // 加载中View
     public View mErrorView; // 加载失败View
     public View mSuccessView; // 加载成功View
+    public View mEmptyView; // 空页面View
     private View.OnClickListener mRefreshListener; // 刷新监听
 
     public ViewHelperController(View contentView) {
@@ -47,7 +48,8 @@ public class ViewHelperController{
         return new ViewHelperController(new OverlapVaryViewHelper(view))
                 .setUpSuccessView(LayoutInflater.from(view.getContext()).inflate(R.layout.success_view_layout, null))
                 .setUpLoadingView(LayoutInflater.from(view.getContext()).inflate(R.layout.load_view_layout, null))
-                .setUpErrorView(LayoutInflater.from(view.getContext()).inflate(R.layout.error_view_layout, null));
+                .setUpErrorView(LayoutInflater.from(view.getContext()).inflate(R.layout.error_view_layout, null))
+                .setUpEmptyView(LayoutInflater.from(view.getContext()).inflate(R.layout.empty_view_layout, null));
     }
 
     
@@ -75,6 +77,10 @@ public class ViewHelperController{
         return mErrorView;
     }
 
+    public View getEmptyView() {
+        return mEmptyView;
+    }
+
     
     public ViewHelperController setUpSuccessView(View view) {
         this.mSuccessView = view;
@@ -90,6 +96,11 @@ public class ViewHelperController{
     
     public ViewHelperController setUpErrorView(View view) {
         this.mErrorView = view;
+        return this;
+    }
+
+    public ViewHelperController setUpEmptyView(View view) {
+        this.mEmptyView = view;
         return this;
     }
 
@@ -190,6 +201,10 @@ public class ViewHelperController{
         mErrorX.startAnimation(mErrorXInAnim);
     }
 
+    public void showEmptyView() {
+        helper.showLayout(mEmptyView);
+    }
+
 
     public void restore() {
         helper.restoreLayout();
@@ -200,6 +215,7 @@ public class ViewHelperController{
         mSuccessView = null;
         mLoadingView = null;
         mErrorView = null;
+        mEmptyView = null;
     }
 
     public static class Builder {
@@ -208,6 +224,7 @@ public class ViewHelperController{
         private View mSuccessView;
         private View mLoadingView;
         private View mErrorView;
+        private View mEmptyView;
         private View[] views;
         private View.OnClickListener mRefreshListener;
 
@@ -239,6 +256,10 @@ public class ViewHelperController{
             return mErrorView;
         }
 
+        public View getEmptyView() {
+            return mEmptyView;
+        }
+
         /**
          * 设置显示数据的View
          */
@@ -268,6 +289,15 @@ public class ViewHelperController{
          */
         public Builder setErrorView(View errorView) {
             this.mErrorView = errorView;
+            return this;
+        }
+
+
+        /**
+         * 设置加载空页面的View
+         */
+        public Builder setEmptyView(View emptyView) {
+            this.mEmptyView = emptyView;
             return this;
         }
 
@@ -304,6 +334,10 @@ public class ViewHelperController{
             if (mErrorView != null) {
                 helper.setUpErrorView(mErrorView);
             }
+            if (mEmptyView != null) {
+                helper.setUpEmptyView(mEmptyView);
+            }
+
             if (mRefreshListener != null) {
                 helper.setUpRefreshListener(mRefreshListener);
             }

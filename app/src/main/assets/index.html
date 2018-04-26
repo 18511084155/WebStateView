@@ -23,7 +23,8 @@
     document.getElementById('btn').onclick = function() {
         window.xyqbNative.webViewAuth && window.xyqbNative.webViewAuth({
             "type": "TAOBAO",
-            "url": "https://login.m.taobao.com/login.htm?tpl_redirect_url=https%3a%2f%2fmember1.taobao.com%2fmember%2ffresh%2faccount_profile.htm", // 页面地址
+            "url": "https://login.m.taobao.com/login.htm?tpl_redirect_url=https%3a%2f%2fmember1.taobao.com%2fmember%2ffresh%2faccount_profile.htm", 
+            "returnUrl":'https://member1.taobao.com/member/fresh/account_profile.htm',
             "javascriptCode": `(function () {
     function sendData(data) {
         window.xyqbNative.webViewAuthCollectionResults && window.xyqbNative.webViewAuthCollectionResults({
@@ -47,10 +48,20 @@
         var formatwdate = y + '-' + m + '-' + d;
         return new Date(time).getTime() < new Date(formatwdate).getTime();
     };
-    var urllList01 = ['https://member1.taobao.com/member/fresh/account_profile.htm', 'https://i.taobao.com/my_taobao.htm', 'https://member1.taobao.com/member/fresh/deliver_address.htm', 'https://pages.tmall.com/wow/jifen/act/point-details', 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm','http://localhost'];
+    var urllList01 = ['https://member1.taobao.com/member/fresh/account_profile.htm', 'https://i.taobao.com/my_taobao.htm', 'https://member1.taobao.com/member/fresh/deliver_address.htm', 'https://pages.tmall.com/wow/jifen/act/point-details', 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm','https://login.m.taobao.com/login.htm?tpl_redirect_url=https://member1.taobao.com/member/fresh/account_profile.htm'];
     var locationUrl01 = window.location.href;
+
+
+    if (locationUrl01.indexOf('https://login.m.taobao.com/login.htm')>-1 && locationUrl01.indexOf('tpl_redirect_url') == -1) {
+            window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure({
+                errorCode: '0001'
+            });
+            return;
+    }
     var urlIndex01 = urllList01.indexOf(locationUrl01);
     switch (urlIndex01) {
+        case -1:
+            window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure();
         case 0:
             sendProgress({ progress: 1 });
             var trueName = '';
@@ -119,7 +130,7 @@
             }
             break;
         case 3:
-             try {
+            try {
                 var integral = {};
                 var pageIndex = 1;
                 var isOver = false;
