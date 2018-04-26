@@ -22,6 +22,7 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import com.financial.quantgroup.v2.bus.RxBus;
+import com.woodys.demo.entity.DataStateType;
 import com.woodys.demo.entity.StateViewType;
 import com.woodys.demo.utils.TaskExecutor;
 
@@ -248,13 +249,11 @@ public class AuthHostJsScope {
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuthCollectionResults(WebView webView, JSONObject json) {
-        String msg = passJson2Java(webView,json);
-        //alert(webView, String.valueOf(msg));
-
         try {
+            String type = (String) webView.getTag();
             String data = json.getString("data");
             //认证成功
-            //RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_SUCCESS_TYPE,0));
+            RxBus.INSTANCE.post(new DataStateType(type,data));
         } catch (JSONException e) {
             e.printStackTrace();
         }

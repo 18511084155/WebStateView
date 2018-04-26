@@ -90,7 +90,8 @@ public class AuthWebActivity extends TitleBarActivity {
             if(BuildConfig.DEBUG) Log.e("测试", "====webReturnUrl====  url:"+webReturnUrl);
             userAgent = arguments.getString("userAgent");
         }
-
+        //设置类型
+        webView.setTag(webType);
         //设置webview的配置信息
         initWebSettings(webView, userAgent);
         //设置webview的事件监听操作
@@ -195,7 +196,17 @@ public class AuthWebActivity extends TitleBarActivity {
                             break;
                         case StateViewType.LAYOUT_LOADING_TYPE:
                             if (helperController.isShowLoadingView()) {
+                                int progress = item.value;
                                 helperController.setLoadingView(item.value);
+                                //当前假如进度是100，就延迟700ms显示加载成功
+                                if(progress>=100){
+                                    titleBar.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            helperController.showSuccessView();
+                                        }
+                                    }, 700);
+                                }
                             } else {
                                 helperController.showLoadingView();
                             }
@@ -385,7 +396,7 @@ public class AuthWebActivity extends TitleBarActivity {
             super.onPageFinished(view, url);
             if (null == webView)
                 return;
-            //用JS 禁止弹出手机键盘
+            //用JS 禁止弹出手机键盘(这个暂时没有作用，有待检查)
             String javascript="var inputs = document.getElementsByTagName('input');\n" +
                     "for (var i = inputs.length - 1; i >= 0; i--) {\n" +
                     "    inputs[i].onfocus = function () {\n" +

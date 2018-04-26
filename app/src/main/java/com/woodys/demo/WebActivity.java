@@ -1,6 +1,7 @@
 package com.woodys.demo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
@@ -13,14 +14,28 @@ import android.webkit.JsResult;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import com.financial.quantgroup.v2.bus.RxBus;
+import com.woodys.demo.entity.DataStateType;
 import com.woodys.demo.entity.StateViewType;
+import com.woodys.libsocket.sdk.ConnectionInfo;
+import com.woodys.libsocket.sdk.OkSocket;
+import com.woodys.libsocket.sdk.OkSocketOptions;
+import com.woodys.libsocket.sdk.SocketActionAdapter;
+import com.woodys.libsocket.sdk.bean.IPulseSendable;
+import com.woodys.libsocket.sdk.bean.ISendable;
+import com.woodys.libsocket.sdk.bean.OriginalData;
+import com.woodys.libsocket.sdk.connection.IConnectionManager;
+import com.woodys.libsocket.sdk.connection.NoneReconnect;
+import com.woodys.libsocket.sdk.protocol.IHeaderProtocol;
 import com.woodys.stateview.ViewHelperController;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,10 +43,14 @@ import cn.pedant.SafeWebViewBridge.InjectedChromeClient;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
+import static android.widget.Toast.LENGTH_SHORT;
+
 
 public class WebActivity extends Activity {
     public static final int REFRESH_AUTH_STATUS_CODE = 0x0010;
     WebView webView = null;
+
+    private IConnectionManager mManager;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +104,92 @@ public class WebActivity extends Activity {
 
         webView.loadUrl("file:///android_asset/index.html");
 
+
+        //初始化SocketClient，打开通道
+        initSocketClient();
+
+    }
+
+    public void initSocketClient() {
+        ConnectionInfo connectionInfo = new ConnectionInfo("192.168.28.109", 59227);
+        OkSocketOptions okSocketOptions = new OkSocketOptions.Builder(OkSocketOptions.getDefault())
+                .setReconnectionManager(new NoneReconnect())
+                .build();
+
+        //设置自定义解析头
+        OkSocketOptions.Builder okOptionsBuilder = new OkSocketOptions.Builder(okSocketOptions);
+        okOptionsBuilder.setHeaderProtocol(new IHeaderProtocol() {
+            @Override
+            public int getHeaderLength() {
+                //返回自定义的包头长度,框架会解析该长度的包头
+                return 0;
+            }
+
+            @Override
+            public int getBodyLength(byte[] header, ByteOrder byteOrder) {
+                //从header(包头数据)中解析出包体的长度,byteOrder是你在参配中配置的字节序,可以使用ByteBuffer比较方便解析
+                return 0;
+            }
+        });
+
+
+        RxBus.INSTANCE.subscribe(this, DataStateType.class, new Function1<DataStateType, Unit>() {
+            @Override
+            public Unit invoke(DataStateType item) {
+                if (null != item) {
+                    //上传信息
+                    SendMessageUtils.sendMessage(mManager,item.type,item.value);
+                }
+                return null;
+            }
+        });
+
+
+        //将新的修改后的参配设置给连接管理器
+        mManager = OkSocket.open(connectionInfo, okOptionsBuilder.build());
+        mManager.registerReceiver(socketActionAdapter);
+
+        //开启SocketClient通道
+        if (!mManager.isConnect()) mManager.connect();
+    }
+
+    private SocketActionAdapter socketActionAdapter = new SocketActionAdapter() {
+
+        @Override
+        public void onSocketConnectionSuccess(Context context, ConnectionInfo info, String action) {
+            //上传设备信息
+            SendMessageUtils.sendDeviceInfoMessage(mManager,WebActivity.this,"FINGERPRINT",null);
+        }
+
+        @Override
+        public void onSocketDisconnection(Context context, ConnectionInfo info, String action, Exception e) {
+            if (e != null) {
+                Toast.makeText(context, "异常断开:" + e.getMessage(), LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(context, "正常断开", LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        public void onSocketConnectionFailed(Context context, ConnectionInfo info, String action, Exception e) {
+            Toast.makeText(context, "连接失败" + e.getMessage(), LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onSocketReadResponse(Context context, ConnectionInfo info, String action, OriginalData data) {
+            super.onSocketReadResponse(context, info, action, data);
+            String str = new String(data.getBodyBytes(), Charset.forName("utf-8"));
+        }
+
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mManager != null) {
+            mManager.disconnect();
+            mManager.unRegisterReceiver(socketActionAdapter);
+        }
     }
 
 
