@@ -385,6 +385,14 @@ public class AuthWebActivity extends TitleBarActivity {
             super.onPageFinished(view, url);
             if (null == webView)
                 return;
+            //用JS 禁止弹出手机键盘
+            String javascript="var inputs = document.getElementsByTagName('input');\n" +
+                    "for (var i = inputs.length - 1; i >= 0; i--) {\n" +
+                    "    inputs[i].onfocus = function () {\n" +
+                    "         inputs[i].readOnly = true;\n" +
+                    "    }\n" +
+                    "}";
+            if(null!=webReturnUrl && webReturnUrl.equals(url)) webView.loadUrl("javascript:" + javascript);
             //注入返回的js代码
             if (!TextUtils.isEmpty(webJavaScript)) webView.loadUrl("javascript:" + webJavaScript);
             String webViewTitle = webView.getTitle();
