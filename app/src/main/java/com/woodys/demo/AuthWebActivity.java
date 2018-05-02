@@ -29,14 +29,18 @@ import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.financial.quantgroup.v2.bus.RxBus;
 import com.quant.titlebar.TitleBarActivity;
 import com.woodys.demo.entity.StateViewType;
+import com.woodys.demo.utils.InputMethodUtils;
 import com.woodys.demo.utils.PackageUtils;
 import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.systembar.SystemBarTintUtils;
 import com.woodys.stateview.ViewHelperController;
+import com.woodys.tools.keyboard.KeyboardWatcher;
+import com.woodys.tools.keyboard.callback.OnKeyboardStateChangeListener;
 
 import java.io.File;
 
@@ -61,6 +65,7 @@ public class AuthWebActivity extends TitleBarActivity {
     private String webReturnUrl;
 
     private ViewHelperController helperController;
+    private KeyboardWatcher keyboardWatcher;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,9 +92,10 @@ public class AuthWebActivity extends TitleBarActivity {
             webType = arguments.getString("type");
             webJavaScript = arguments.getString("javascript");
             webReturnUrl = arguments.getString("returnUrl");
-            if(BuildConfig.DEBUG) Log.e("测试", "====webReturnUrl====  url:"+webReturnUrl);
             userAgent = arguments.getString("userAgent");
         }
+        if (!TextUtils.isEmpty(webTitle)) titleBar.setTitleText(webTitle);
+
         //设置类型
         webView.setTag(webType);
         //设置webview的配置信息
@@ -105,12 +111,38 @@ public class AuthWebActivity extends TitleBarActivity {
         if (!TextUtils.isEmpty(webUrl)) {
             //显示内容
             helperController.restore();
-            if (!TextUtils.isEmpty(webTitle)) titleBar.setTitleText(webTitle);
+
             progressBar.startProgressAnim();
             webView.loadUrl(webUrl);
         } else {
             //显示空页面试图
             helperController.showEmptyView();
+        }
+        //键盘的监听事件
+        keyboardWatcher = KeyboardWatcher.get().init(AuthWebActivity.this, getWindow().getDecorView(), new OnKeyboardStateChangeListener() {
+            @Override
+            public void onKeyboardStateChange(boolean isShow, int heightDifference) {
+                if(isShow && helperController.getCurrentView()!=helperController.getContentView()) {
+                    InputMethodUtils.hideKeyboard(AuthWebActivity.this);
+                }
+            }
+        });
+    }
+
+    /**
+     * 在js中禁止键盘自动弹出
+     */
+    private void hideKeyboard(){
+        if(helperController.getCurrentView()!=helperController.getContentView()){
+            String javascript = "var inputs = document.getElementsByTagName('input');" +
+                    "for (var i = 0; i<inputs.length - 1; i++) {\n" +
+                    "    inputs[i].readOnly=true;\n" +
+                    "    inputs[i].removeAttribute('autofocus');\n" +
+                    "    inputs[i].onfocus = function () {\n" +
+                    "       document.activeElement.blur();\n" +
+                    "    }\n" +
+                    "}";
+            webView.loadUrl("javascript:" + javascript);
         }
     }
 
@@ -235,7 +267,7 @@ public class AuthWebActivity extends TitleBarActivity {
         @Override
         public void onReceivedTitle(WebView view, String title) {
             super.onReceivedTitle(view, title);
-            if (!TextUtils.isEmpty(title) && !title.contains("title") && !title.contains("htt") && !title.contains("www.") && title.length() <= 10) {
+            if (!TextUtils.isEmpty(title) && !title.contains("title") && !title.contains("http") && !title.contains("www.") && title.length() <= 10) {
                 if (TextUtils.isEmpty(webTitle) && null != titleBar) titleBar.setTitleText(title);
             }
         }
@@ -277,7 +309,6 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
-            super.onProgressChanged(view, newProgress);
             if (progressBar.getProgress() < progressBar.getFirstProgress()) {
                 progressBar.passProgressAnim(new Function0<Unit>() {
                     @Override
@@ -287,6 +318,13 @@ public class AuthWebActivity extends TitleBarActivity {
                     }
                 });
             }
+            hideKeyboard();
+            super.onProgressChanged(view, newProgress);
+        }
+
+        @Override
+        public void onRequestFocus(WebView view) {
+            super.onRequestFocus(view);
         }
 
         @Override
@@ -326,6 +364,7 @@ public class AuthWebActivity extends TitleBarActivity {
             webView.destroy();
             webView = null;
         }
+        if(null!=keyboardWatcher) keyboardWatcher.release();
         RxBus.INSTANCE.unSubscribeItems(this);
         super.onDestroy();
     }
@@ -362,9 +401,9 @@ public class AuthWebActivity extends TitleBarActivity {
             }
         }
 
+
         @Override
         public void onLoadResource(WebView view, String url) {
-            if(BuildConfig.DEBUG) Log.e("测试", "====onLoadResource====  url:"+url);
             super.onLoadResource(view, url);
         }
 
@@ -393,24 +432,12 @@ public class AuthWebActivity extends TitleBarActivity {
         @Override
         public void onPageFinished(WebView view, String url) {
             if(BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  url:"+url);
-            super.onPageFinished(view, url);
             if (null == webView)
                 return;
-            //用JS 禁止弹出手机键盘(这个暂时没有作用，有待检查)
-            String javascript="var inputs = document.getElementsByTagName('input');\n" +
-                    "for (var i = inputs.length - 1; i >= 0; i--) {\n" +
-                    "    inputs[i].onfocus = function () {\n" +
-                    "         inputs[i].readOnly = true;\n" +
-                    "    }\n" +
-                    "}";
-            if(null!=webReturnUrl && webReturnUrl.equals(url)) webView.loadUrl("javascript:" + javascript);
             //注入返回的js代码
             if (!TextUtils.isEmpty(webJavaScript)) webView.loadUrl("javascript:" + webJavaScript);
-            String webViewTitle = webView.getTitle();
-            if (!TextUtils.isEmpty(webViewTitle) && !webViewTitle.contains("{") && !webViewTitle.contains("www.") && webViewTitle.length() <= 15) {
-                titleBar.setTitleText(webViewTitle);
-            }
             progressBar.setVisibility(View.GONE);
+            super.onPageFinished(view, url);
         }
     }
 

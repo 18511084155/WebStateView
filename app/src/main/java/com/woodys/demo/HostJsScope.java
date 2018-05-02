@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.financial.quantgroup.v2.bus.RxBus;
 import com.woodys.demo.entity.StateViewType;
+import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.TaskExecutor;
 
 import org.json.JSONException;
@@ -212,6 +213,7 @@ public class HostJsScope {
         Context viewContext = webView.getContext();
         Intent intent = new Intent(viewContext, AuthWebActivity.class);
         try {
+            intent.putExtra("title", Res.getString(R.string.webview_auth_title));
             intent.putExtra("type",json.getString("type"));
             intent.putExtra("url",json.getString("url"));
             intent.putExtra("javascript",json.getString("javascriptCode"));
@@ -220,7 +222,6 @@ public class HostJsScope {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         ((Activity)viewContext).startActivityForResult(intent,WebActivity.REFRESH_AUTH_STATUS_CODE);
     }
 
