@@ -18,6 +18,10 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
+import android.util.Log;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebView;
 import android.widget.Toast;
 
@@ -210,6 +214,9 @@ public class AuthHostJsScope {
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuthProgress(WebView webView, JSONObject json) {
+        String jsonStr=passJson2Java(webView,json);
+        if (BuildConfig.DEBUG) Log.e("测试", "====webViewAuthProgress====  jsonStr:" + jsonStr);
+
         try {
             //获取进度操作信息
             int progress = json.getInt("progress");
@@ -227,6 +234,9 @@ public class AuthHostJsScope {
      * "errorCode":"0001" //0001密码错误   0002采集错误
      */
     public static void webViewAuthFailure(WebView webView, JSONObject json) {
+        String jsonStr=passJson2Java(webView,json);
+        if (BuildConfig.DEBUG) Log.e("测试", "====webViewAuthFailure====  jsonStr:" + jsonStr);
+
         try {
             String errorCode = json.getString("errorCode");
             if("0002".equals(errorCode)){
@@ -249,6 +259,8 @@ public class AuthHostJsScope {
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuthCollectionResults(WebView webView, JSONObject json) {
+        String jsonStr=passJson2Java(webView,json);
+        if (BuildConfig.DEBUG) Log.e("测试", "====webViewAuthCollectionResults====  jsonStr:" + jsonStr);
         try {
             String type = (String) webView.getTag();
             String data = json.getString("data");
@@ -268,14 +280,77 @@ public class AuthHostJsScope {
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuthSetUserAgent(WebView webView, JSONObject json) {
+
+        String jsonStr=passJson2Java(webView,json);
+        if (BuildConfig.DEBUG) Log.e("测试", "====webViewAuthSetUserAgent====  jsonStr:" + jsonStr);
         try {
-            //修改ua使得web端正确判断
+
+
             String url = json.getString("url");
             String userAgent = json.getString("userAgent");
+            //CookieManager cookieManager = CookieManager.getInstance();
+            //String cookieStr = cookieManager.getCookie(webView.getUrl());
             webView.getSettings().setUserAgentString(userAgent);
-            webView.loadUrl(url);
+            //syncCookie(webView,url,cookieStr);
+            if(!TextUtils.isEmpty(url)){
+                String javascript=String.format("window.location.href='%s';", url);
+                webView.loadUrl("javascript:" + javascript);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 将cookie设置到 WebView
+     * @param url 要加载的 url
+     * @param cookie 要同步的 cookie
+     */
+    public static void syncCookie(WebView webview,String url,String cookie) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            CookieSyncManager.createInstance(webview.getContext());
+        }
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+        cookieManager.removeSessionCookie();// 移除
+        cookieManager.removeAllCookie();
+        //部分手机WebView无法成功同步Cookie问题的解决方案
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cookieManager.setAcceptThirdPartyCookies(webview, true);
+        }
+        /**
+         * cookie 设置形式
+         * cookieManager.setCookie(url, "key=value;" + "domain=[your domain];path=/;")
+         **/
+        getCookieAllKeysByCookieString(cookie);
+        cookieManager.setCookie(url, cookie);
+        CookieSyncManager.getInstance().sync();
+    }
+
+
+    public static List<String> getCookieAllKeysByCookieString(String pCookies) {
+        if (TextUtils.isEmpty(pCookies)) {
+            return null;
+        }
+        String[] cookieField = pCookies.split(";");
+        int len = cookieField.length;
+        for (int i = 0; i < len; i++) {
+            cookieField[i] = cookieField[i].trim();
+        }
+        List<String> allCookieField = new ArrayList<>();
+        for (int i = 0; i < len; i++) {
+            if (TextUtils.isEmpty(cookieField[i])) {
+                continue;
+            }
+            if (!cookieField[i].contains("=")) {
+                continue;
+            }
+            String[] singleCookieField = cookieField[i].split("=");
+            allCookieField.add(singleCookieField[0]);
+        }
+        if (allCookieField.isEmpty()) {
+            return null;
+        }
+        return allCookieField;
     }
 }

@@ -98,6 +98,7 @@ public class WebActivity extends Activity {
         });
 
         String url = "http://192.168.28.30:8080/test/index.html";
+        //String url = "http://www.baidu.com/";
         //webView.loadUrl(url);
 
         webView.loadUrl("file:///android_asset/index.html");
@@ -106,6 +107,13 @@ public class WebActivity extends Activity {
         //初始化SocketClient，打开通道
         initSocketClient();
 
+
+        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                webView.reload();
+            }
+        });
     }
 
     public void initSocketClient() {

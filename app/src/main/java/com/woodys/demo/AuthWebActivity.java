@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,6 +13,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,10 +24,9 @@ import android.webkit.CookieSyncManager;
 import android.webkit.DownloadListener;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
-import android.webkit.ValueCallback;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
-import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
@@ -34,15 +35,17 @@ import android.widget.Toast;
 import com.financial.quantgroup.v2.bus.RxBus;
 import com.quant.titlebar.TitleBarActivity;
 import com.woodys.demo.entity.StateViewType;
-import com.woodys.demo.utils.InputMethodUtils;
-import com.woodys.demo.utils.PackageUtils;
 import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.systembar.SystemBarTintUtils;
+import com.woodys.keyboard.InputMethodHolder;
+import com.woodys.keyboard.OnInputMethodListener;
+import com.woodys.keyboard.OnInterceptMethodListener;
 import com.woodys.stateview.ViewHelperController;
-import com.woodys.tools.keyboard.KeyboardWatcher;
-import com.woodys.tools.keyboard.callback.OnKeyboardStateChangeListener;
 
 import java.io.File;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 import cn.pedant.SafeWebViewBridge.InjectedChromeClient;
 import cz.widget.progress.ProgressBar;
@@ -65,7 +68,8 @@ public class AuthWebActivity extends TitleBarActivity {
     private String webReturnUrl;
 
     private ViewHelperController helperController;
-    private KeyboardWatcher keyboardWatcher;
+    OnInputMethodListener onInputMethodListener;
+    private Map<String,String> cookieMaps = new HashMap<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,7 +91,7 @@ public class AuthWebActivity extends TitleBarActivity {
         String userAgent = null;
         if (null != arguments) {
             webUrl = arguments.getString("url");
-            if(BuildConfig.DEBUG) Log.e("测试", "====webUrl====  url:"+webUrl);
+            if (BuildConfig.DEBUG) Log.e("测试", "====webUrl====  url:" + webUrl);
             webTitle = arguments.getString("title");
             webType = arguments.getString("type");
             webJavaScript = arguments.getString("javascript");
@@ -111,7 +115,6 @@ public class AuthWebActivity extends TitleBarActivity {
         if (!TextUtils.isEmpty(webUrl)) {
             //显示内容
             helperController.restore();
-
             progressBar.startProgressAnim();
             webView.loadUrl(webUrl);
         } else {
@@ -119,12 +122,30 @@ public class AuthWebActivity extends TitleBarActivity {
             helperController.showEmptyView();
         }
         //键盘的监听事件
-        keyboardWatcher = KeyboardWatcher.get().init(AuthWebActivity.this, getWindow().getDecorView(), new OnKeyboardStateChangeListener() {
+        onInputMethodListener = new OnInputMethodListener() {
             @Override
-            public void onKeyboardStateChange(boolean isShow, int heightDifference) {
-                if(isShow && helperController.getCurrentView()!=helperController.getContentView()) {
-                    InputMethodUtils.hideKeyboard(AuthWebActivity.this);
+            public void onShow(boolean result) {
+                Toast.makeText(AuthWebActivity.this, "Show input method! " + result, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onHide(boolean result) {
+                Toast.makeText(AuthWebActivity.this, "Hide input method! " + result, Toast.LENGTH_SHORT).show();
+            }
+        };
+        InputMethodHolder.registerListener(onInputMethodListener);
+
+        InputMethodHolder.setOnInterceptMethodListener(new OnInterceptMethodListener() {
+            @Override
+            public Pair<Boolean, Object> onIntercept(Object obj, Method method, Object result) {
+                Pair<Boolean, Object> objectPair = null;
+                if (helperController.getCurrentView() != helperController.getContentView()) {
+                    String methodName = method.getName();
+                    if ("showSoftInput".equals(methodName)) {
+                        objectPair = new Pair(true, true);
+                    }
                 }
+                return objectPair;
             }
         });
     }
@@ -132,8 +153,8 @@ public class AuthWebActivity extends TitleBarActivity {
     /**
      * 在js中禁止键盘自动弹出
      */
-    private void hideKeyboard(){
-        if(helperController.getCurrentView()!=helperController.getContentView()){
+    private void hideKeyboard() {
+        if (helperController.getCurrentView() != helperController.getContentView()) {
             String javascript = "var inputs = document.getElementsByTagName('input');" +
                     "for (var i = 0; i<inputs.length - 1; i++) {\n" +
                     "    inputs[i].readOnly=true;\n" +
@@ -154,10 +175,13 @@ public class AuthWebActivity extends TitleBarActivity {
      */
     private void initWebSettings(WebView webView, String userAgent) {
         WebSettings webSetting = webView.getSettings();
+
+        //如果访问的页面中有Javascript，则webview必须设置支持Javascript
         webSetting.setJavaScriptEnabled(true);
         webSetting.setJavaScriptCanOpenWindowsAutomatically(true);
         webSetting.setUseWideViewPort(true);
         webSetting.setLoadWithOverviewMode(true);
+        // 设置可以访问文件
         webSetting.setAllowFileAccess(true);
         webSetting.setSupportZoom(true);
         webSetting.setBuiltInZoomControls(false);
@@ -182,7 +206,6 @@ public class AuthWebActivity extends TitleBarActivity {
             WebView.setWebContentsDebuggingEnabled(true);
         }
 
-
     }
 
     /**
@@ -201,19 +224,25 @@ public class AuthWebActivity extends TitleBarActivity {
         findViewById(R.id.text2).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                helperController.showLoadingView();
+                String javascript=String.format("window.location.href='%s';", "https://pages.tmall.com/wow/jifen/act/point-details");
+                webView.loadUrl("javascript:" + javascript);
+                //helperController.showLoadingView();
             }
         });
+
         findViewById(R.id.text3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                helperController.showErrorView();
+                String javascript=String.format("window.location.href='%s';", "https://member1.taobao.com/member/fresh/deliver_address.htm");
+                webView.loadUrl("javascript:" + javascript);
+                //helperController.showErrorView();
             }
         });
         findViewById(R.id.text4).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                helperController.showSuccessView();
+                webView.loadUrl("https://pages.tmall.com/wow/jifen/act/point-details");
+                //helperController.showSuccessView();
             }
         });
 
@@ -231,7 +260,7 @@ public class AuthWebActivity extends TitleBarActivity {
                                 int progress = item.value;
                                 helperController.setLoadingView(item.value);
                                 //当前假如进度是100，就延迟700ms显示加载成功
-                                if(progress>=100){
+                                if (progress >= 100) {
                                     titleBar.postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
@@ -318,7 +347,7 @@ public class AuthWebActivity extends TitleBarActivity {
                     }
                 });
             }
-            hideKeyboard();
+            //hideKeyboard();
             super.onProgressChanged(view, newProgress);
         }
 
@@ -364,7 +393,8 @@ public class AuthWebActivity extends TitleBarActivity {
             webView.destroy();
             webView = null;
         }
-        if(null!=keyboardWatcher) keyboardWatcher.release();
+        InputMethodHolder.unregisterListener(onInputMethodListener);
+        InputMethodHolder.clearOnInterceptMethodListener();
         RxBus.INSTANCE.unSubscribeItems(this);
         super.onDestroy();
     }
@@ -387,8 +417,11 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-            if(BuildConfig.DEBUG) Log.e("测试", "====onPageStarted====  url:"+url);
+            if(!url.startsWith("tmall://")) {
+                super.onPageStarted(view, url, favicon);
+            }
+
+            if (BuildConfig.DEBUG) Log.e("测试", "====onPageStarted====  url:" + url);
             try {
                 progressBar.setProgress(0);
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
@@ -401,6 +434,10 @@ public class AuthWebActivity extends TitleBarActivity {
             }
         }
 
+        public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+            handler.proceed();// 接受所有网站的证书
+        }
+
 
         @Override
         public void onLoadResource(WebView view, String url) {
@@ -409,9 +446,11 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            if(BuildConfig.DEBUG) Log.e("测试", "====shouldOverrideUrlLoading====  url:"+url);
-            if(null!=webReturnUrl && webReturnUrl.equals(url)) helperController.showLoadingView();
-            view.loadUrl(url);
+            if (BuildConfig.DEBUG) Log.e("测试", "====shouldOverrideUrlLoading====  url:" + url);
+            if (null != webReturnUrl && webReturnUrl.equals(url)) helperController.showLoadingView();
+            if(!url.startsWith("tmall://")) {
+                view.loadUrl(url);
+            }
             return true;
         }
 
@@ -431,16 +470,23 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            if(BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  url:"+url);
+            super.onPageFinished(view, url);
+            if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  url:" + url);
             if (null == webView)
                 return;
             //注入返回的js代码
-            if (!TextUtils.isEmpty(webJavaScript)) webView.loadUrl("javascript:" + webJavaScript);
+            if (!TextUtils.isEmpty(webJavaScript)) {
+                webView.loadUrl("javascript:" + webJavaScript);
+            }
             progressBar.setVisibility(View.GONE);
-            super.onPageFinished(view, url);
+            CookieManager cookieManager = CookieManager.getInstance();
+            String cookieStr = cookieManager.getCookie(url);
+            cookieMaps.put(url,cookieStr);
+            if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  cookieStr:" + cookieStr);
         }
     }
 
+    boolean isJavaScript=false;
 
     boolean canGoBack = false;
 
@@ -522,4 +568,9 @@ public class AuthWebActivity extends TitleBarActivity {
         webView.setVisibility(View.VISIBLE);
     }
 
+    @Override
+    public void finish() {
+        setResult(RESULT_OK);
+        super.finish();
+    }
 }
