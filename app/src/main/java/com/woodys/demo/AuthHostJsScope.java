@@ -236,18 +236,14 @@ public class AuthHostJsScope {
     public static void webViewAuthFailure(WebView webView, JSONObject json) {
         String jsonStr=passJson2Java(webView,json);
         if (BuildConfig.DEBUG) Log.e("测试", "====webViewAuthFailure====  jsonStr:" + jsonStr);
-
+        String errorCode=null;
         try {
-            String errorCode = json.getString("errorCode");
-            if("0002".equals(errorCode)){
-                //认证失败
-                RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_ERROR_TYPE,0));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
+            errorCode = json.getString("errorCode");
+        } catch (Exception e) { }
+        if(!"0001".equals(errorCode)){
+            //认证失败
+            RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_ERROR_TYPE,0));
         }
-
-
     }
 
 

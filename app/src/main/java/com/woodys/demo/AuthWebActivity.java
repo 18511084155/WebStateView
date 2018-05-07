@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
@@ -20,7 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.DownloadListener;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
@@ -30,7 +30,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import com.financial.quantgroup.v2.bus.RxBus;
 import com.quant.titlebar.TitleBarActivity;
@@ -38,7 +37,6 @@ import com.woodys.demo.entity.StateViewType;
 import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.systembar.SystemBarTintUtils;
 import com.woodys.keyboard.InputMethodHolder;
-import com.woodys.keyboard.OnInputMethodListener;
 import com.woodys.keyboard.OnInterceptMethodListener;
 import com.woodys.stateview.ViewHelperController;
 
@@ -68,7 +66,6 @@ public class AuthWebActivity extends TitleBarActivity {
     private String webReturnUrl;
 
     private ViewHelperController helperController;
-    OnInputMethodListener onInputMethodListener;
     private Map<String,String> cookieMaps = new HashMap<>();
 
     @Override
@@ -121,19 +118,6 @@ public class AuthWebActivity extends TitleBarActivity {
             //显示空页面试图
             helperController.showEmptyView();
         }
-        //键盘的监听事件
-        onInputMethodListener = new OnInputMethodListener() {
-            @Override
-            public void onShow(boolean result) {
-                Toast.makeText(AuthWebActivity.this, "Show input method! " + result, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onHide(boolean result) {
-                Toast.makeText(AuthWebActivity.this, "Hide input method! " + result, Toast.LENGTH_SHORT).show();
-            }
-        };
-        InputMethodHolder.registerListener(onInputMethodListener);
 
         InputMethodHolder.setOnInterceptMethodListener(new OnInterceptMethodListener() {
             @Override
@@ -148,23 +132,6 @@ public class AuthWebActivity extends TitleBarActivity {
                 return objectPair;
             }
         });
-    }
-
-    /**
-     * 在js中禁止键盘自动弹出
-     */
-    private void hideKeyboard() {
-        if (helperController.getCurrentView() != helperController.getContentView()) {
-            String javascript = "var inputs = document.getElementsByTagName('input');" +
-                    "for (var i = 0; i<inputs.length - 1; i++) {\n" +
-                    "    inputs[i].readOnly=true;\n" +
-                    "    inputs[i].removeAttribute('autofocus');\n" +
-                    "    inputs[i].onfocus = function () {\n" +
-                    "       document.activeElement.blur();\n" +
-                    "    }\n" +
-                    "}";
-            webView.loadUrl("javascript:" + javascript);
-        }
     }
 
     /**
@@ -265,8 +232,9 @@ public class AuthWebActivity extends TitleBarActivity {
                                         @Override
                                         public void run() {
                                             helperController.showSuccessView();
+                                            setDownTimerschedule(4*1000);
                                         }
-                                    }, 700);
+                                    }, 500);
                                 }
                             } else {
                                 helperController.showLoadingView();
@@ -274,9 +242,11 @@ public class AuthWebActivity extends TitleBarActivity {
                             break;
                         case StateViewType.LAYOUT_ERROR_TYPE:
                             helperController.showErrorView();
+                            setDownTimerschedule(4*1000);
                             break;
                         case StateViewType.LAYOUT_SUCCESS_TYPE:
                             helperController.showSuccessView();
+                            setDownTimerschedule(4*1000);
                             break;
                     }
                 }
@@ -347,7 +317,6 @@ public class AuthWebActivity extends TitleBarActivity {
                     }
                 });
             }
-            //hideKeyboard();
             super.onProgressChanged(view, newProgress);
         }
 
@@ -393,7 +362,6 @@ public class AuthWebActivity extends TitleBarActivity {
             webView.destroy();
             webView = null;
         }
-        InputMethodHolder.unregisterListener(onInputMethodListener);
         InputMethodHolder.clearOnInterceptMethodListener();
         RxBus.INSTANCE.unSubscribeItems(this);
         super.onDestroy();
@@ -486,8 +454,6 @@ public class AuthWebActivity extends TitleBarActivity {
         }
     }
 
-    boolean isJavaScript=false;
-
     boolean canGoBack = false;
 
     @Override
@@ -572,5 +538,23 @@ public class AuthWebActivity extends TitleBarActivity {
     public void finish() {
         setResult(RESULT_OK);
         super.finish();
+    }
+
+    /**
+     * 设置倒计时操作
+     * @param millis
+     */
+    private void setDownTimerschedule(long millis){
+        /** 倒计时3秒，一次1秒 */
+        CountDownTimer timer = new CountDownTimer(millis, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) { }
+
+            @Override
+            public void onFinish() {
+                //倒计时完毕了
+                finish();
+            }
+        }.start();
     }
 }

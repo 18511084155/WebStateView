@@ -16,38 +16,30 @@
 </head>
 
 <body>
-    <button id="btn">
-        点击授权淘宝
-    </button>
-    <script>
+<button id="btn">
+    点击授权淘宝
+</button>
+<script>
     document.getElementById('btn').onclick = function() {
         window.xyqbNative.webViewAuth && window.xyqbNative.webViewAuth({
             "type": "TAOBAO",
             "url": "https://login.m.taobao.com/login.htm?tpl_redirect_url=https%3a%2f%2fmember1.taobao.com%2fmember%2ffresh%2faccount_profile.htm", 
             "returnUrl":'https://member1.taobao.com/member/fresh/account_profile.htm',
             "javascriptCode": `(function () {
-    function sleep(numberMillis) {
-        var now = new Date();
-        var exitTime = now.getTime() + numberMillis;
-        while (true) {
-        now = new Date();
-        if (now.getTime() > exitTime)
-            return;
-        }
+    function sendProgressAndData(progress, data, cb) {
+        setTimeout(function () {
+            try {
+                window.xyqbNative.webViewAuthProgress && window.xyqbNative.webViewAuthProgress(progress);
+                window.xyqbNative.webViewAuthCollectionResults && window.xyqbNative.webViewAuthCollectionResults({ 'data': data });
+                cb && cb();
+            } catch (error) {
+                window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure({ error: 'error' });
+            }
+        }, 200);
     };
-
-    function sendData(data) {
-        setTimeout(function(){window.xyqbNative.webViewAuthCollectionResults && window.xyqbNative.webViewAuthCollectionResults({'data': data});},800);
-    };
-
-    function sendProgress(json) {
-        setTimeout(function(){window.xyqbNative.webViewAuthProgress && window.xyqbNative.webViewAuthProgress(json);},800);
-    };
-
     function setWebViewAuthSetUserAgent(json) {
-        setTimeout(function(){window.xyqbNative.webViewAuthSetUserAgent && window.xyqbNative.webViewAuthSetUserAgent(json);},800);
+        setTimeout(function () { window.xyqbNative.webViewAuthSetUserAgent && window.xyqbNative.webViewAuthSetUserAgent(json); });
     };
-
     function isOverTime(time) {
         time = time.replace('年', '-').replace('月', '-').replace('日', '');
         var nowdate = new Date();
@@ -60,7 +52,7 @@
         var formatwdate = y + '-' + m + '-' + d;
         return new Date(time).getTime() < new Date(formatwdate).getTime();
     };
-    var urllList01 = ['https://member1.taobao.com/member/fresh/account_profile.htm', 'https://member1.taobao.com/member/fresh/deliver_address.htm', 'https://pages.tmall.com/wow/jifen/act/point-details', 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm', 'https://login.m.taobao.com/login.htm?tpl_redirect_url=https://member1.taobao.com/member/fresh/account_profile.htm'];
+    var urllList01 = ['https://member1.taobao.com/member/fresh/account_profile.htm', 'https://member1.taobao.com/member/fresh/deliver_address.htm', 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm', 'https://login.m.taobao.com/login.htm?tpl_redirect_url=https://member1.taobao.com/member/fresh/account_profile.htm'];
     var locationUrl01 = window.location.href;
     if (locationUrl01.indexOf('https://login.m.taobao.com/login.htm') > -1 && locationUrl01.indexOf('tpl_redirect_url') == -1) {
         window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure({
@@ -70,20 +62,16 @@
     }
     var urlIndex01 = urllList01.indexOf(locationUrl01);
     switch (urlIndex01) {
-        case -1:
-            window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure({error:'error'});
-            break;
         case 0:
-            sendProgress({ progress: 1 });
             var trueName = '';
             try {
                 var trueNameDom = document.querySelector('.elem-form > li:nth-child(1) > strong');
                 trueName = trueNameDom ? trueNameDom.innerText : '';
-                sendProgress({ progress: 10 });
-                sendData({ type: 1, username: trueName });
-                if (urlIndex01 > -1 && urlIndex01 < urllList01.length - 1) {
-                    window.location.href = urllList01[urlIndex01 + 1];
-                }
+                sendProgressAndData({ progress: 10 }, { type: 1, username: trueName }, function () {
+                    if (urlIndex01 > -1 && urlIndex01 < urllList01.length - 1) {
+                        window.location.href = urllList01[urlIndex01 + 1];
+                    }
+                })
             } catch (error) {
                 window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error);
             }
@@ -104,68 +92,14 @@
                     };
                     addressList.push(obj);
                 }
-
-                sendProgress({ progress: 40 });
-                sendData({ type: 2, addressList });
-                setWebViewAuthSetUserAgent({ userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36', url: 'https://pages.tmall.com/wow/jifen/act/point-details' });
+                sendProgressAndData({ progress: 60 }, { type: 2, addressList }, function () {
+                    setWebViewAuthSetUserAgent({ userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36', url: 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm' });
+                })
             } catch (error) {
                 window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error);
             }
             break;
-           case 2:
-            try {
-                var integral = {};
-                var pageIndex = 1;
-                var isOver = false;
-                var totalScoreDom = document.querySelector('#J_pointSummary > div > div.item.valid > span.point');
-                integral.totalScore = totalScoreDom ? totalScoreDom.innerText : '';
-                integral.items = [];
-                integral.type = 3;
-                function getIntegralData() {
-                    pageIndex++;
-                    var itemList = document.querySelectorAll('.item-list li');
-                    for (var i = 0; i < itemList.length; i++) {
-                        var obj = {};
-                        obj.id = itemList[i].querySelector('div.why > span') ? itemList[i].querySelector('div.why > span').innerText : '';
-                        obj.source = itemList[i].querySelector('div.why > a.title') ? itemList[i].querySelector('div.why > a.title').innerText : '';
-                        obj.scoreChange = itemList[i].querySelector('div.what > span') ? itemList[i].querySelector('div.what > span').innerText : '';
-                        obj.createTime = itemList[i].querySelector('div.when') ? itemList[i].querySelector('div.when').innerText : '';
-                        isOver = isOverTime(obj.createTime);
-                        if (isOver) {
-                            break;
-                        }
-                        obj.mark = itemList[i].querySelector('div.notes') ? itemList[i].querySelector('div.notes').innerText : '';
-                        integral.items.push(obj);
-                    }
-                    var pageN = document.querySelector('#J_pointPager > div > div > div.mui-page-num > a.mui-page-next');
-                    if (!isOver && pageN) {
-                        pageN.click();
-                        var timer = setInterval(() => {
-                            try {
-                                var piDom = document.querySelector('#J_pointPager > div > div > div.mui-page-num > b.mui-page-cur');
-                                var piText = piDom ? piDom.innerText : '';
-                                var pi = piText == pageIndex;
-                                if (pi) {
-                                    clearInterval(timer);
-                                    getIntegralData();
-                                }
-                            } catch (error) {
-                                window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error);
-                            }
-                        }, 100);
-                    } else {
-                        sendProgress({ progress: 70 });
-                        sendData(integral);
-                        setWebViewAuthSetUserAgent({ userAgent: '', url: 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm' });
-                    }
-
-                }
-                getIntegralData();
-            } catch (error) {
-                window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error);
-            }
-            break;
-        case 3:
+        case 2:
             try {
                 var goosList = [];
                 var pageIndex = 1;
@@ -222,19 +156,18 @@
                     } else {
                         if (isLoad) return;
                         isLoad = true;
-                        sendProgress({ progress: 100 });
-                        sendData({ type: 4, goosList });
+                        sendProgressAndData({ progress: 100 }, { type: 4, goosList });
                     }
                 }
                 selectData();
             } catch (error) {
-                sendProgress({ progress: 100 });
-                sendData({ type: 4, goosList: {} });
+                sendProgressAndData({ progress: 100 }, { type: 4, goosList: {} });
                 window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error);
             }
             break;
     }
-})();`,
+})();
+`,
             "userAgent": ""
         })
     }

@@ -97,11 +97,11 @@ public class WebActivity extends Activity {
             }
         });
 
-        String url = "http://192.168.28.30:8080/test/index.html";
+        String url = "http://192.168.28.30:8080/test/demo.html";
         //String url = "http://www.baidu.com/";
-        //webView.loadUrl(url);
+        webView.loadUrl(url);
 
-        webView.loadUrl("file:///android_asset/index.html");
+        //webView.loadUrl("file:///android_asset/index.html");
 
 
         //初始化SocketClient，打开通道
@@ -198,29 +198,12 @@ public class WebActivity extends Activity {
         }
     }
 
-
-    /**
-     * 网页爬虫授权完成后返回上级页面刷新状态
-     */
-    private void refreshAuthStatus(){
-        try {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("event", "webViewRefreshAuthStatus");
-            Map<String,String> stringMap = new HashMap<String,String>();
-            stringMap.put("type","TAOBAO");
-            jsonObject.put("data",stringMap);
-            webView.loadUrl("javascript:webViewRefreshAuthStatus(" + jsonObject + ")");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode,resultCode,data);
         if(REFRESH_AUTH_STATUS_CODE==requestCode && resultCode==RESULT_OK ){
-            //注入js代码
-            refreshAuthStatus();
+            //网页爬虫授权完成后返回上级页面刷新状态
+            webView.reload();
         }
     }
 
