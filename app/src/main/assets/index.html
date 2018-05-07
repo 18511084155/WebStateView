@@ -26,16 +26,22 @@
             "url": "https://login.m.taobao.com/login.htm?tpl_redirect_url=https%3a%2f%2fmember1.taobao.com%2fmember%2ffresh%2faccount_profile.htm", 
             "returnUrl":'https://member1.taobao.com/member/fresh/account_profile.htm',
             "javascriptCode": `(function () {
-    function sendProgressAndData(progress, data, cb) {
-        setTimeout(function () {
-            try {
-                window.xyqbNative.webViewAuthProgress && window.xyqbNative.webViewAuthProgress(progress);
-                window.xyqbNative.webViewAuthCollectionResults && window.xyqbNative.webViewAuthCollectionResults({ 'data': data });
-                cb && cb();
-            } catch (error) {
-                window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure({ error: 'error' });
-            }
-        }, 200);
+    function sendProgressAndData(progress, data, cb, index) {
+        if(index>=0){
+            setTimeout(function () {
+                try {
+                    window.xyqbNative.webViewAuthProgress && window.xyqbNative.webViewAuthProgress(progress);
+                    window.xyqbNative.webViewAuthCollectionResults && window.xyqbNative.webViewAuthCollectionResults({ 'data': data });
+                    cb && cb();
+                } catch (error) {
+                    if(index-- <= 0){
+                        window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure({ error: 'error' });
+                    }else{
+                        sendProgressAndData(progress,data,cb,index);
+                    }
+                }
+            }, 400);
+        }
     };
     function setWebViewAuthSetUserAgent(json) {
         setTimeout(function () { window.xyqbNative.webViewAuthSetUserAgent && window.xyqbNative.webViewAuthSetUserAgent(json); });
@@ -71,7 +77,7 @@
                     if (urlIndex01 > -1 && urlIndex01 < urllList01.length - 1) {
                         window.location.href = urllList01[urlIndex01 + 1];
                     }
-                })
+                },4);
             } catch (error) {
                 window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error);
             }
@@ -94,7 +100,7 @@
                 }
                 sendProgressAndData({ progress: 60 }, { type: 2, addressList }, function () {
                     setWebViewAuthSetUserAgent({ userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36', url: 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm' });
-                })
+                },4);
             } catch (error) {
                 window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error);
             }
@@ -156,12 +162,11 @@
                     } else {
                         if (isLoad) return;
                         isLoad = true;
-                        sendProgressAndData({ progress: 100 }, { type: 4, goosList });
+                        sendProgressAndData({ progress: 100 }, { type: 4, goosList },function () {},4);
                     }
                 }
                 selectData();
             } catch (error) {
-                sendProgressAndData({ progress: 100 }, { type: 4, goosList: {} });
                 window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error);
             }
             break;

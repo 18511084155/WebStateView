@@ -93,7 +93,7 @@ public class SendMessageUtils {
                               @Override
                               public void call(String msg) {
                                   MsgDataBean msgDataBean = new MsgDataBean(msg);
-                                  connectionManager.send(msgDataBean);
+                                  //connectionManager.send(msgDataBean);
                               }
                           }, new Action1<Throwable>() {
                               @Override

@@ -117,7 +117,7 @@ public class WebActivity extends Activity {
     }
 
     public void initSocketClient() {
-        ConnectionInfo connectionInfo = new ConnectionInfo("192.168.28.109", 59227);
+        ConnectionInfo connectionInfo = new ConnectionInfo("172.30.220.7", 59227);
         OkSocketOptions okSocketOptions = new OkSocketOptions.Builder(OkSocketOptions.getDefault())
                 .setReconnectionManager(new NoneReconnect())
                 .build();
