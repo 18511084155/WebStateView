@@ -33,6 +33,7 @@ import android.widget.FrameLayout;
 
 import com.financial.quantgroup.v2.bus.RxBus;
 import com.quant.titlebar.TitleBarActivity;
+import com.woodys.demo.entity.DataStateType;
 import com.woodys.demo.entity.StateViewType;
 import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.systembar.SystemBarTintUtils;
@@ -40,10 +41,10 @@ import com.woodys.keyboard.InputMethodHolder;
 import com.woodys.keyboard.OnInterceptMethodListener;
 import com.woodys.stateview.ViewHelperController;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 import cn.pedant.SafeWebViewBridge.InjectedChromeClient;
 import cz.widget.progress.ProgressBar;
@@ -66,7 +67,6 @@ public class AuthWebActivity extends TitleBarActivity {
     private String webReturnUrl;
 
     private ViewHelperController helperController;
-    private Map<String,String> cookieMaps = new HashMap<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -388,7 +388,6 @@ public class AuthWebActivity extends TitleBarActivity {
             if(!url.startsWith("tmall://")) {
                 super.onPageStarted(view, url, favicon);
             }
-
             if (BuildConfig.DEBUG) Log.e("测试", "====onPageStarted====  url:" + url);
             try {
                 progressBar.setProgress(0);
@@ -421,15 +420,12 @@ public class AuthWebActivity extends TitleBarActivity {
             }
             return true;
         }
-
-
         @Override
         public void onReceivedError(WebView view, int errorCode,
                                     String description, String failingUrl) {
             super.onReceivedError(view, errorCode, description, failingUrl);
             progressBar.setVisibility(View.GONE);
         }
-
 
         @Override
         public boolean shouldOverrideKeyEvent(WebView view, KeyEvent event) {
@@ -440,17 +436,26 @@ public class AuthWebActivity extends TitleBarActivity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  url:" + url);
-            if (null == webView)
-                return;
+            if (null == webView) return;
             //注入返回的js代码
             if (!TextUtils.isEmpty(webJavaScript)) {
                 webView.loadUrl("javascript:" + webJavaScript);
             }
             progressBar.setVisibility(View.GONE);
-            CookieManager cookieManager = CookieManager.getInstance();
-            String cookieStr = cookieManager.getCookie(url);
-            cookieMaps.put(url,cookieStr);
-            if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  cookieStr:" + cookieStr);
+            if (null != webReturnUrl && webReturnUrl.equals(url)) {
+                CookieManager cookieManager = CookieManager.getInstance();
+                String cookieStr = cookieManager.getCookie(url);
+
+                JSONObject jsonObject = null;
+                try {
+                    jsonObject=new JSONObject();
+                    jsonObject.put("userAgent",webView.getSettings().getUserAgentString());
+                    jsonObject.put("cookie",cookieStr);
+                    //认证成功
+                    RxBus.INSTANCE.post(new DataStateType(webType, jsonObject.toString()));
+                    if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  cookieStr:" + cookieStr);
+                } catch (Exception e) { }
+            }
         }
     }
 

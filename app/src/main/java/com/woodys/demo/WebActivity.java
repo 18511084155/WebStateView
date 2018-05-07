@@ -99,9 +99,9 @@ public class WebActivity extends Activity {
 
         String url = "http://192.168.28.30:8080/test/demo.html";
         //String url = "http://www.baidu.com/";
-        webView.loadUrl(url);
+        //webView.loadUrl(url);
 
-        //webView.loadUrl("file:///android_asset/index.html");
+        webView.loadUrl("file:///android_asset/index.html");
 
 
         //初始化SocketClient，打开通道

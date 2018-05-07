@@ -45,28 +45,31 @@ import cn.pedant.SafeWebViewBridge.JsCallback;
 public class AuthHostJsScope {
     /**
      * 短暂气泡提醒
+     *
      * @param webView 浏览器
      * @param message 提示信息
-     * */
+     */
     public static void toast(WebView webView, String message) {
         Toast.makeText(webView.getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     /**
      * 可选择时间长短的气泡提醒
-     * @param webView 浏览器
-     * @param message 提示信息
+     *
+     * @param webView    浏览器
+     * @param message    提示信息
      * @param isShowLong 提醒时间方式
-     * */
+     */
     public static void toast(WebView webView, String message, int isShowLong) {
         Toast.makeText(webView.getContext(), message, isShowLong).show();
     }
 
     /**
      * 弹出记录的测试JS层到Java层代码执行损耗时间差
-     * @param webView 浏览器
+     *
+     * @param webView   浏览器
      * @param timeStamp js层执行时的时间戳
-     * */
+     */
     public static void testLossTime(WebView webView, long timeStamp) {
         timeStamp = System.currentTimeMillis() - timeStamp;
         alert(webView, String.valueOf(timeStamp));
@@ -74,9 +77,10 @@ public class AuthHostJsScope {
 
     /**
      * 系统弹出提示框
+     *
      * @param webView 浏览器
      * @param message 提示信息
-     * */
+     */
     public static void alert(WebView webView, String message) {
         // 构建一个Builder来显示网页中的alert对话框
         AlertDialog.Builder builder = new AlertDialog.Builder(webView.getContext());
@@ -103,9 +107,10 @@ public class AuthHostJsScope {
 
     /**
      * 获取设备IMSI
+     *
      * @param webView 浏览器
      * @return 设备IMSI
-     * */
+     */
     public static String getIMSI(WebView webView) {
         if (ActivityCompat.checkSelfPermission(webView.getContext(), Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
             return null;
@@ -115,10 +120,11 @@ public class AuthHostJsScope {
 
     /**
      * 获取用户系统版本大小
+     *
      * @param webView 浏览器
      * @return 安卓SDK版本
-     * */
-    public static int getOsSdk (WebView webView) {
+     */
+    public static int getOsSdk(WebView webView) {
         return Build.VERSION.SDK_INT;
     }
 
@@ -126,27 +132,29 @@ public class AuthHostJsScope {
 
     /**
      * 结束当前窗口
+     *
      * @param view 浏览器
-     * */
-    public static void goBack (WebView view) {
+     */
+    public static void goBack(WebView view) {
         if (view.getContext() instanceof Activity) {
-            ((Activity)view.getContext()).finish();
+            ((Activity) view.getContext()).finish();
         }
     }
 
     /**
      * 传入Json对象
+     *
      * @param view 浏览器
-     * @param jo 传入的JSON对象
+     * @param jo   传入的JSON对象
      * @return 返回对象的第一个键值对
-     * */
-    public static String passJson2Java (WebView view, JSONObject jo) {
+     */
+    public static String passJson2Java(WebView view, JSONObject jo) {
         Iterator iterator = jo.keys();
         String res = "";
         while (iterator.hasNext()) {
             try {
-                String keyW = (String)iterator.next();
-                res += keyW + ": " + jo.getString(keyW)+"\n";
+                String keyW = (String) iterator.next();
+                res += keyW + ": " + jo.getString(keyW);
             } catch (JSONException je) {
                 je.printStackTrace();
             }
@@ -156,11 +164,12 @@ public class AuthHostJsScope {
 
     /**
      * 将传入Json对象直接返回
+     *
      * @param view 浏览器
-     * @param jo 传入的JSON对象
+     * @param jo   传入的JSON对象
      * @return 返回对象的第一个键值对
-     * */
-    public static JSONObject retBackPassJson (WebView view, JSONObject jo) {
+     */
+    public static JSONObject retBackPassJson(WebView view, JSONObject jo) {
         return jo;
     }
 
@@ -201,7 +210,7 @@ public class AuthHostJsScope {
         });
     }
 
-    public static long passLongType (WebView view, long i) {
+    public static long passLongType(WebView view, long i) {
         return i;
     }
 
@@ -210,19 +219,19 @@ public class AuthHostJsScope {
      * 网页爬虫授权进度
      *
      * @param webView 浏览器
-     * @param json   传入的JSON对象
+     * @param json    传入的JSON对象
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuthProgress(WebView webView, JSONObject json) {
-        String jsonStr=passJson2Java(webView,json);
-        if (BuildConfig.DEBUG) Log.e("测试", "====webViewAuthProgress====  jsonStr:" + jsonStr);
-
+        if (BuildConfig.DEBUG) {
+            String jsonStr = passJson2Java(webView, json);
+            Log.e("测试", "====webViewAuthProgress====  jsonStr:" + jsonStr);
+        }
         try {
             //获取进度操作信息
             int progress = json.getInt("progress");
-            RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_LOADING_TYPE,progress));
-        } catch (JSONException e) {
-            e.printStackTrace();
+            RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_LOADING_TYPE, progress));
+        } catch (Exception e) {
         }
     }
 
@@ -231,18 +240,21 @@ public class AuthHostJsScope {
      * 网页爬虫授权失败
      *
      * @param webView 浏览器
-     * "errorCode":"0001" //0001密码错误   0002采集错误
+     *                "errorCode":"0001" //0001密码错误   0002采集错误
      */
     public static void webViewAuthFailure(WebView webView, JSONObject json) {
-        String jsonStr=passJson2Java(webView,json);
-        if (BuildConfig.DEBUG) Log.e("测试", "====webViewAuthFailure====  jsonStr:" + jsonStr);
-        String errorCode=null;
+        if (BuildConfig.DEBUG) {
+            String jsonStr = passJson2Java(webView, json);
+            Log.e("测试", "====webViewAuthFailure====  jsonStr:" + jsonStr);
+        }
+        String errorCode = null;
         try {
             errorCode = json.getString("errorCode");
-        } catch (Exception e) { }
-        if(!"0001".equals(errorCode)){
+        } catch (Exception e) {
+        }
+        if (!"0001".equals(errorCode)) {
             //认证失败
-            RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_ERROR_TYPE,0));
+            RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_ERROR_TYPE, 0));
         }
     }
 
@@ -251,19 +263,20 @@ public class AuthHostJsScope {
      * 网页爬虫授权采集结果
      *
      * @param webView 浏览器
-     * @param json   传入的JSON对象
+     * @param json    传入的JSON对象
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuthCollectionResults(WebView webView, JSONObject json) {
-        String jsonStr=passJson2Java(webView,json);
-        if (BuildConfig.DEBUG) Log.e("测试", "====webViewAuthCollectionResults====  jsonStr:" + jsonStr);
+        if (BuildConfig.DEBUG) {
+            String jsonStr = passJson2Java(webView, json);
+            Log.e("测试", "====webViewAuthCollectionResults====  jsonStr:" + jsonStr);
+        }
         try {
             String type = (String) webView.getTag();
             String data = json.getString("data");
             //认证成功
-            RxBus.INSTANCE.post(new DataStateType(type,data));
-        } catch (JSONException e) {
-            e.printStackTrace();
+            RxBus.INSTANCE.post(new DataStateType(type, data));
+        } catch (Exception e) {
         }
     }
 
@@ -272,37 +285,33 @@ public class AuthHostJsScope {
      * 设置webview的userAgent
      *
      * @param webView 浏览器
-     * @param json   传入的JSON对象
+     * @param json    传入的JSON对象
      * @return 返回对象的第一个键值对
      */
     public static void webViewAuthSetUserAgent(WebView webView, JSONObject json) {
-
-        String jsonStr=passJson2Java(webView,json);
-        if (BuildConfig.DEBUG) Log.e("测试", "====webViewAuthSetUserAgent====  jsonStr:" + jsonStr);
+        if (BuildConfig.DEBUG) {
+            String jsonStr = passJson2Java(webView, json);
+            Log.e("测试", "====webViewAuthSetUserAgent====  jsonStr:" + jsonStr);
+        }
         try {
-
-
             String url = json.getString("url");
             String userAgent = json.getString("userAgent");
-            //CookieManager cookieManager = CookieManager.getInstance();
-            //String cookieStr = cookieManager.getCookie(webView.getUrl());
             webView.getSettings().setUserAgentString(userAgent);
-            //syncCookie(webView,url,cookieStr);
-            if(!TextUtils.isEmpty(url)){
-                String javascript=String.format("window.location.href='%s';", url);
+            if (!TextUtils.isEmpty(url)) {
+                String javascript = String.format("window.location.href='%s';", url);
                 webView.loadUrl("javascript:" + javascript);
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
         }
     }
 
     /**
      * 将cookie设置到 WebView
-     * @param url 要加载的 url
+     *
+     * @param url    要加载的 url
      * @param cookie 要同步的 cookie
      */
-    public static void syncCookie(WebView webview,String url,String cookie) {
+    public static void syncCookie(WebView webview, String url, String cookie) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             CookieSyncManager.createInstance(webview.getContext());
         }
