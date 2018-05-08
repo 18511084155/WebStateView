@@ -1,1 +1,1 @@
-include ':app', ':WebStateLibrary'
+include ':app', ':WebStateLibrary',':library'

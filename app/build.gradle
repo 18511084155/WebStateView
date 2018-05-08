@@ -31,6 +31,7 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     //compile project(':WebStateLibrary')
+    compile project(':library')
 
     testCompile 'junit:junit:4.12'
     //noinspection GradleCompatible
@@ -43,6 +44,8 @@ dependencies {
     compile 'com.woodys.stateview:webstatelibrary:1.0.1'
 
     compile 'com.woodys.keyboard:inputmethodholder:1.1.0'
+
+    compile project(':library')
 
 
     //kotlin库
@@ -57,7 +60,7 @@ dependencies {
     compile 'io.reactivex:rxandroid:1.1.0'
     compile 'com.cz.titlebar:titlebar:1.2.6'
     compile 'com.cz.widget:widget:1.5.1'
-    compile 'cn.pedant.safewebviewbridge:library:1.4'
+    //compile 'cn.pedant.safewebviewbridge:library:1.4'
 
 
 

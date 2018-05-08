@@ -308,6 +308,7 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
+            if (BuildConfig.DEBUG) Log.e("测试", "====onProgressChanged====url:"+view.getUrl() +"  newProgress:" + newProgress);
             if (progressBar.getProgress() < progressBar.getFirstProgress()) {
                 progressBar.passProgressAnim(new Function0<Unit>() {
                     @Override
@@ -385,10 +386,6 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            if(!url.startsWith("tmall://")) {
-                super.onPageStarted(view, url, favicon);
-            }
-            if (BuildConfig.DEBUG) Log.e("测试", "====onPageStarted====  url:" + url);
             try {
                 progressBar.setProgress(0);
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
@@ -399,6 +396,11 @@ public class AuthWebActivity extends TitleBarActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            if(!url.startsWith("tmall://") && !url.startsWith("tbopen://") ) {
+                super.onPageStarted(view, url, favicon);
+            }
+            if (BuildConfig.DEBUG) Log.e("测试", "====onPageStarted====  url:" + url);
         }
 
         public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
@@ -415,10 +417,10 @@ public class AuthWebActivity extends TitleBarActivity {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (BuildConfig.DEBUG) Log.e("测试", "====shouldOverrideUrlLoading====  url:" + url);
             if (null != webReturnUrl && webReturnUrl.equals(url)) helperController.showLoadingView();
-            if(!url.startsWith("tmall://")) {
+            if(!url.startsWith("tmall://") && !url.startsWith("tbopen://") ) {
                 view.loadUrl(url);
             }
-            return true;
+            return false;
         }
         @Override
         public void onReceivedError(WebView view, int errorCode,
@@ -436,10 +438,10 @@ public class AuthWebActivity extends TitleBarActivity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  url:" + url);
-            if (null == webView) return;
+            if (null == view) return;
             //注入返回的js代码
             if (!TextUtils.isEmpty(webJavaScript)) {
-                webView.loadUrl("javascript:" + webJavaScript);
+                view.loadUrl("javascript:" + webJavaScript);
             }
             progressBar.setVisibility(View.GONE);
             if (null != webReturnUrl && webReturnUrl.equals(url)) {
@@ -449,7 +451,7 @@ public class AuthWebActivity extends TitleBarActivity {
                 JSONObject jsonObject = null;
                 try {
                     jsonObject=new JSONObject();
-                    jsonObject.put("userAgent",webView.getSettings().getUserAgentString());
+                    jsonObject.put("userAgent",view.getSettings().getUserAgentString());
                     jsonObject.put("cookie",cookieStr);
                     //认证成功
                     RxBus.INSTANCE.post(new DataStateType(webType, jsonObject.toString()));
