@@ -164,7 +164,7 @@ public class WebActivity extends Activity {
         @Override
         public void onSocketConnectionSuccess(Context context, ConnectionInfo info, String action) {
             //上传设备信息
-            SendMessageUtils.sendDeviceInfoMessage(mManager,WebActivity.this,"FINGERPRINT",null);
+            //SendMessageUtils.sendDeviceInfoMessage(mManager,WebActivity.this,"FINGERPRINT",null);
         }
 
         @Override
