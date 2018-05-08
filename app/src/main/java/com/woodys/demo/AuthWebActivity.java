@@ -308,7 +308,7 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
-            if (BuildConfig.DEBUG) Log.e("测试", "====onProgressChanged====url:"+view.getUrl() +"  newProgress:" + newProgress);
+            //if (BuildConfig.DEBUG) Log.e("测试", "====onProgressChanged====url:"+view.getUrl() +"  newProgress:" + newProgress);
             if (progressBar.getProgress() < progressBar.getFirstProgress()) {
                 progressBar.passProgressAnim(new Function0<Unit>() {
                     @Override
@@ -420,7 +420,7 @@ public class AuthWebActivity extends TitleBarActivity {
             if(!url.startsWith("tmall://") && !url.startsWith("tbopen://") ) {
                 view.loadUrl(url);
             }
-            return false;
+            return true;
         }
         @Override
         public void onReceivedError(WebView view, int errorCode,

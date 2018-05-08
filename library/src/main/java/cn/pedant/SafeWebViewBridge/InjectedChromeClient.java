@@ -47,16 +47,15 @@ public class InjectedChromeClient extends WebChromeClient {
             mIsInjectedJS = false;
             mIsInjectedJSB = false;
         } else if (!mIsInjectedJS) {
-            view.loadUrl(mJsCallJava.getPreloadInterfaceJS());
             mIsInjectedJS = true;
+            view.loadUrl(mJsCallJava.getPreloadInterfaceJS());
             mIsInjectedJSB = false;
             Log.d(TAG, " inject js interface completely on progress " + newProgress);
-        }else if(newProgress >= 90){
+        } else if(!mIsInjectedJSB && newProgress >= 90){
             //确保全部注入到html中
-            if(!mIsInjectedJSB){
-                view.loadUrl(mJsCallJava.getPreloadInterfaceJS());
-                mIsInjectedJSB = true;
-            }
+            mIsInjectedJSB = true;
+            view.loadUrl(mJsCallJava.getPreloadInterfaceJS());
+            Log.d(TAG, " inject js interface completely on progress " + newProgress);
         }
         super.onProgressChanged(view, newProgress);
     }
