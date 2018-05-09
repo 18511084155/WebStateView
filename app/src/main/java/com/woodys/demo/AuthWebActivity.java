@@ -192,8 +192,8 @@ public class AuthWebActivity extends TitleBarActivity {
             @Override
             public void onClick(View v) {
                 String javascript=String.format("window.location.href='%s';", "https://pages.tmall.com/wow/jifen/act/point-details");
-                webView.loadUrl("javascript:" + javascript);
-                //helperController.showLoadingView();
+                //webView.loadUrl("javascript:" + javascript);
+                helperController.showLoadingView();
             }
         });
 
@@ -201,15 +201,14 @@ public class AuthWebActivity extends TitleBarActivity {
             @Override
             public void onClick(View v) {
                 String javascript=String.format("window.location.href='%s';", "https://member1.taobao.com/member/fresh/deliver_address.htm");
-                webView.loadUrl("javascript:" + javascript);
-                //helperController.showErrorView();
+                //webView.loadUrl("javascript:" + javascript);
+                helperController.showErrorView();
             }
         });
         findViewById(R.id.text4).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                webView.loadUrl("https://pages.tmall.com/wow/jifen/act/point-details");
-                //helperController.showSuccessView();
+                helperController.showSuccessView();
             }
         });
 

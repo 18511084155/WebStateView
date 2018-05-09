@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+    #btn {
+        height: 200px;
+        width: 200px;
+        background: blue;
+    }
+    </style>
+</head>
+
+<body>
+<button id="btn">
+    点击授权淘宝
+</button>
+<script>
+    document.getElementById('btn').onclick = function() {
+        window.xyqbNative.webViewAuth && window.xyqbNative.webViewAuth({
+            "type": "TAOBAO",
+            "url": "(function() {
+    function sendProgressAndData(progress, data, cb) {
+        setTimeout(function() {
+            try {
+                window.xyqbNative.webViewAuthProgress && window.xyqbNative.webViewAuthProgress(progress);
+                window.xyqbNative.webViewAuthCollectionResults && window.xyqbNative.webViewAuthCollectionResults({
+                    'data': data
+                });
+                cb && cb()
+            } catch(error) {
+                window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure({
+                    error: 'error'
+                })
+            }
+        },
+        200)
+    };
+    function fireEvent(element, event) {
+        if (document.createEventObject) {
+            var evt = document.createEventObject();
+            return element.fireEvent('on' + event, evt)
+        } else {
+            var evt = document.createEvent('HTMLEvents');
+            evt.initEvent(event, true, true);
+            return element.dispatchEvent(evt)
+        }
+    }
+    function setWebViewAuthSetUserAgent(json) {
+        setTimeout(function() {
+            window.xyqbNative.webViewAuthSetUserAgent && window.xyqbNative.webViewAuthSetUserAgent(json)
+        })
+    };
+    function isOverTime(time) {
+        time = time.replace('年', '-').replace('月', '-').replace('日', '');
+        var nowdate = new Date();
+        nowdate.setMonth(nowdate.getMonth() - 3);
+        var y = nowdate.getFullYear();
+        var m = nowdate.getMonth() + 1;
+        m = m >= 10 ? m: '0' + m;
+        var d = nowdate.getDate();
+        d = d >= 10 ? d: '0' + d;
+        var formatwdate = y + '-' + m + '-' + d;
+        return new Date(time).getTime() < new Date(formatwdate).getTime()
+    };
+    var urllList01 = ['https://member1.taobao.com/member/fresh/account_profile.htm', 'https://member1.taobao.com/member/fresh/deliver_address.htm', 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm', 'https://login.m.taobao.com/login.htm?tpl_redirect_url=https://member1.taobao.com/member/fresh/account_profile.htm'];
+    var locationUrl01 = window.location.href;
+    if (locationUrl01.indexOf('https://login.m.taobao.com/login.htm') > -1 && locationUrl01.indexOf('tpl_redirect_url') == -1) {
+        window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure({
+            errorCode: '0001'
+        });
+        return
+    }
+    var urlIndex01 = urllList01.indexOf(locationUrl01);
+    switch (urlIndex01) {
+    case 0:
+        var trueName = '';
+        try {
+            var trueNameDom = document.querySelector('.elem-form > li:nth-child(1) > strong');
+            trueName = trueNameDom ? trueNameDom.innerText: '';
+            sendProgressAndData({
+                progress: 10
+            },
+            {
+                type: 1,
+                username: trueName
+            },
+            function() {
+                if (urlIndex01 > -1 && urlIndex01 < urllList01.length - 1) {
+                    window.location.href = urllList01[urlIndex01 + 1]
+                }
+            })
+        } catch(error) {
+            window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error)
+        }
+        break;
+    case 1:
+        try {
+            var addressListDom = document.querySelectorAll('.thead-tbl-address');
+            var addressList = [];
+            for (var i = 0; i < addressListDom.length; i++) {
+                var hh = addressListDom[i].querySelectorAll('td');
+                var obj = {
+                    receiver: hh[0] ? hh[0].innerText: '',
+                    areaDetail: hh[1] ? hh[1].innerText: '',
+                    addressDetail: hh[2] ? hh[2].innerText: '',
+                    zipCode: hh[3] ? hh[3].innerText: '',
+                    phone: hh[4] ? hh[4].innerText.replace(/s+/g, '') : '',
+                    isDefault: hh[6] ? hh[6].querySelector('span') ? true: false: '',
+                };
+                addressList.push(obj)
+            }
+            sendProgressAndData({
+                progress: 60
+            },
+            {
+                type: 2,
+                address: addressList
+            },
+            function() {
+                setWebViewAuthSetUserAgent({
+                    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
+                    url: 'https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm'
+                })
+            })
+        } catch(error) {
+            window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error)
+        }
+        break;
+    case 2:
+        try {
+            var goosList = [];
+            var pageIndex = 1;
+            var isOver = false;
+            var isLoad = false;
+            function selectData() {
+                pageIndex++;
+                var tableList = document.querySelectorAll('.js-order-container table');
+                for (var i = 0; i < tableList.length; i++) {
+                    var obj = {};
+                    var tbody = tableList[i].querySelectorAll('tbody tr');
+                    var length = tbody.length;
+                    obj.createTime = tbody[0].querySelector('.bought-wrapper-mod__create-time___yNWVS').innerText.replace(/s+/g, '');
+                    isOver = isOverTime(obj.createTime);
+                    if (isOver) {
+                        break
+                    }
+                    obj.id = tbody[0].querySelector('td.bought-wrapper-mod__head-info-cell___29cDO > span > span:nth-child(3)').innerText;
+                    obj.totalMoney = tbody[1].querySelector('div.price-mod__price___157jz > p > strong > span:nth-child(2)').innerText;
+                    obj.status = tbody[1].querySelector('td:nth-child(6) > div > p > span').innerText;
+                    obj.goods = [];
+                    obj.goods.push({
+                        name: tbody[1].querySelector('td:nth-child(1) > div > div:nth-child(2) > p:nth-child(1) > a:nth-child(1) > span:nth-child(2)') ? tbody[1].querySelector('td:nth-child(1) > div > div:nth-child(2) > p:nth-child(1) > a:nth-child(1) > span:nth-child(2)').innerText: tbody[1].querySelector('td:nth-child(1) > div > div:nth-child(2) > p:nth-child(1) > span:nth-child(1) > span:nth-child(2)').innerText,
+                        count: tbody[1].querySelector('td:nth-child(3) > div > p').innerText,
+                        price: tbody[1].querySelector('td:nth-child(2) > div > p:nth-child(2) > span:nth-child(2)') ? tbody[1].querySelector('td:nth-child(2) > div > p:nth-child(2) > span:nth-child(2)').innerText: tbody[1].querySelector('td:nth-child(2) > div > p > span:nth-child(2)').innerText
+                    });
+                    for (var j = 2; j < length - 1; j++) {
+                        var isFenqi = tbody[j].querySelector('td:nth-child(1) > div > div:nth-child(2) > p:nth-child(1) > a:nth-child(1) > span:nth-child(2)');
+                        if (!isFenqi) {
+                            break
+                        }
+                        obj.goods.push({
+                            name: tbody[j].querySelector('td:nth-child(1) > div > div:nth-child(2) > p:nth-child(1) > a:nth-child(1) > span:nth-child(2)').innerText,
+                            count: tbody[j].querySelector('td:nth-child(3) > div > p').innerText,
+                            price: tbody[1].querySelector('td:nth-child(2) > div > p:nth-child(2) > span:nth-child(2)') ? tbody[1].querySelector('td:nth-child(2) > div > p:nth-child(2) > span:nth-child(2)').innerText: tbody[1].querySelector('td:nth-child(2) > div > p > span:nth-child(2)').innerText
+                        })
+                    }
+                    goosList.push(obj)
+                }
+                var pageNext = document.querySelector('#tp-bought-root > div.row-mod__row___30Zj1.js-actions-row-bottom > div:nth-child(2) > ul > li.pagination-item.pagination-item-' + pageIndex);
+                if (!isOver && pageNext) {
+                    fireEvent(pageNext, 'click');
+                    var timer = setInterval(function() {
+                        try {
+                            var pi = document.querySelector('.pagination-item-active > a').innerText == pageIndex;
+                            if (pi) {
+                                clearInterval(timer);
+                                selectData()
+                            }
+                        } catch(error) {
+                            window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error)
+                        }
+                    },
+                    200)
+                } else {
+                    if (isLoad) return;
+                    isLoad = true;
+                    sendProgressAndData({
+                        progress: 100
+                    },
+                    {
+                        type: 4,
+                        goos: goosList
+                    })
+                }
+            }
+            selectData()
+        } catch(error) {
+            console.error(error);
+            window.xyqbNative.webViewAuthFailure && window.xyqbNative.webViewAuthFailure(error)
+        }
+        break
+    }
+})();",
+            "userAgent": ""
+        })
+    }
+    </script>
+</body>
+
+</html>
