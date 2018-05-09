@@ -34,6 +34,7 @@ import android.widget.FrameLayout;
 import com.financial.quantgroup.v2.bus.RxBus;
 import com.quant.titlebar.TitleBarActivity;
 import com.woodys.demo.entity.DataStateType;
+import com.woodys.demo.entity.RefreshStatus;
 import com.woodys.demo.entity.StateViewType;
 import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.systembar.SystemBarTintUtils;
@@ -231,7 +232,7 @@ public class AuthWebActivity extends TitleBarActivity {
                                         @Override
                                         public void run() {
                                             helperController.showSuccessView();
-                                            setDownTimerschedule(4*1000);
+                                            setDownTimerschedule(4*1000,1500);
                                         }
                                     }, 500);
                                 }
@@ -241,11 +242,11 @@ public class AuthWebActivity extends TitleBarActivity {
                             break;
                         case StateViewType.LAYOUT_ERROR_TYPE:
                             helperController.showErrorView();
-                            setDownTimerschedule(4*1000);
+                            setDownTimerschedule(4*1000,1500);
                             break;
                         case StateViewType.LAYOUT_SUCCESS_TYPE:
                             helperController.showSuccessView();
-                            setDownTimerschedule(4*1000);
+                            setDownTimerschedule(4*1000,1500);
                             break;
                     }
                 }
@@ -542,20 +543,26 @@ public class AuthWebActivity extends TitleBarActivity {
 
     @Override
     public void finish() {
-        setResult(RESULT_OK);
+        RxBus.INSTANCE.post(new RefreshStatus(webType));
         super.finish();
     }
 
     /**
      * 设置倒计时操作
+     *
      * @param millis
      */
-    private void setDownTimerschedule(long millis){
+    private void setDownTimerschedule(long millis, final long timeMillis) {
+        final boolean[] isTimeMillis = {false};
         /** 倒计时3秒，一次1秒 */
         CountDownTimer timer = new CountDownTimer(millis, 1000) {
             @Override
-            public void onTick(long millisUntilFinished) { }
-
+            public void onTick(long millisUntilFinished) {
+                if(!isTimeMillis[0] && millisUntilFinished <= timeMillis){
+                    isTimeMillis[0] = true;
+                    RxBus.INSTANCE.post(new RefreshStatus(webType));
+                }
+            }
             @Override
             public void onFinish() {
                 //倒计时完毕了

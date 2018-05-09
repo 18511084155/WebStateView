@@ -15,12 +15,12 @@ import com.woodys.stateview.R;
 public class SuccessView extends View {
     private float mDensity = -1;
     private Paint mPaint;
-    private final float CONST_RADIUS = dip2px(1.2f);
+    private final float CONST_RADIUS = dip2px(1.4f);
     private final float CONST_RECT_WEIGHT = dip2px(3);
-    private final float CONST_LEFT_RECT_W = dip2px(20);
-    private final float CONST_RIGHT_RECT_W = dip2px(30);
-    private final float MIN_LEFT_RECT_W = dip2px(3.3f);
-    private final float MAX_RIGHT_RECT_W = CONST_RIGHT_RECT_W + dip2px(6.7f);
+    private final float CONST_LEFT_RECT_W = dip2px(30);
+    private final float CONST_RIGHT_RECT_W = dip2px(40);
+    private final float MIN_LEFT_RECT_W = dip2px(3f);
+    private final float MAX_RIGHT_RECT_W = CONST_RIGHT_RECT_W + dip2px(6f);
 
     private float mMaxLeftRectWidth;
     private float mLeftRectWidth;
@@ -53,8 +53,8 @@ public class SuccessView extends View {
         // rotate canvas first
         canvas.rotate(45, totalW / 2, totalH / 2);
 
-        totalW /= 1.2;
-        totalH /= 1.4;
+        totalW /= 1.3;
+        totalH /= 1.5;
         mMaxLeftRectWidth = (totalW + CONST_LEFT_RECT_W) / 2 + CONST_RECT_WEIGHT - 1;
 
         RectF leftRect = new RectF();

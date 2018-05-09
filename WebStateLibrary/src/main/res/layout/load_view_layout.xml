@@ -9,9 +9,9 @@
     android:orientation="vertical">
 
     <FrameLayout
-        android:id="@+id/success_frame"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:id="@+id/load_frame"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
         android:layout_centerInParent="true">
 
         <com.woodys.stateview.circleprogress.CircleProgressView
@@ -19,26 +19,37 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             CircleProgressView:cpv_autoTextSize="false"
-            CircleProgressView:cpv_barColor="@color/primary"
+            CircleProgressView:cpv_barColor="#B44B4D"
             CircleProgressView:cpv_barWidth="3dp"
             CircleProgressView:cpv_innerContourSize="0dp"
             CircleProgressView:cpv_maxValue="100"
             CircleProgressView:cpv_outerContourSize="0dp"
-            CircleProgressView:cpv_rimColor="@color/primary_light"
-            CircleProgressView:cpv_rimWidth="5dp"
+            CircleProgressView:cpv_rimColor="#dcdcdc"
+            CircleProgressView:cpv_rimWidth="4dp"
             CircleProgressView:cpv_seekMode="false"
             CircleProgressView:cpv_showUnit="true"
-            CircleProgressView:cpv_spinColor="@color/primary"
-            CircleProgressView:cpv_textColor="@color/primary_dark"
-            CircleProgressView:cpv_textSize="18sp"
+            CircleProgressView:cpv_spinColor="#B44B4D"
+            CircleProgressView:cpv_textColor="#333333"
+            CircleProgressView:cpv_textSize="14sp"
             CircleProgressView:cpv_textScale="1"
             CircleProgressView:cpv_unit="%"
             CircleProgressView:cpv_unitSize="12sp"
-            CircleProgressView:cpv_unitColor="@color/primary_light"
+            CircleProgressView:cpv_unitColor="#dcdcdc"
             CircleProgressView:cpv_unitPosition="right_bottom"
             CircleProgressView:cpv_unitScale="1"
             CircleProgressView:cpv_value="10" />
 
     </FrameLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/load_frame"
+        android:layout_marginTop="30dp"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:text="@string/auth_loading"
+        android:visibility="invisible"/>
 
 </RelativeLayout>

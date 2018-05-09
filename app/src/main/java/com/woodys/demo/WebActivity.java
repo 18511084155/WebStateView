@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.financial.quantgroup.v2.bus.RxBus;
 import com.woodys.demo.entity.DataStateType;
+import com.woodys.demo.entity.RefreshStatus;
 import com.woodys.demo.entity.StateViewType;
 import com.woodys.libsocket.sdk.ConnectionInfo;
 import com.woodys.libsocket.sdk.OkSocket;
@@ -68,13 +69,13 @@ public class WebActivity extends Activity {
         webSetting.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSetting.setDomStorageEnabled(true);
         webSetting.setDatabaseEnabled(true);
-        webSetting.setAppCacheEnabled(false);
+        webSetting.setAppCacheEnabled(true);
         webSetting.setAppCacheMaxSize(1024 * 1024 * 8);
         //启用地理定位
         webSetting.setGeolocationEnabled(true);
         String PICASSO_CACHE = "picasso-cache";
         webSetting.setGeolocationDatabasePath(PICASSO_CACHE);
-        webSetting.setAppCacheEnabled(false);
+        webSetting.setAppCacheEnabled(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             WebView.setWebContentsDebuggingEnabled(true);
         }
@@ -97,7 +98,8 @@ public class WebActivity extends Activity {
             }
         });
 
-        String url = "http://192.168.28.30:8080/test/demo.html";
+        //String url = "http://192.168.28.30:8080/test/demo.html";
+        String url ="http://192.168.28.30:7020/auth-page";
         //String url = "http://www.baidu.com/";
         //webView.loadUrl(url);
 
@@ -150,6 +152,14 @@ public class WebActivity extends Activity {
             }
         });
 
+        RxBus.INSTANCE.subscribe(this, RefreshStatus.class, new Function1<RefreshStatus, Unit>() {
+            @Override
+            public Unit invoke(RefreshStatus item) {
+                if (null != item) refreshAuthStatus(item.type);
+                return null;
+            }
+        });
+
 
         //将新的修改后的参配设置给连接管理器
         mManager = OkSocket.open(connectionInfo, okOptionsBuilder.build());
@@ -189,6 +199,23 @@ public class WebActivity extends Activity {
 
     };
 
+    /**
+     * 网页爬虫授权完成后返回上级页面刷新状态
+     */
+    private void refreshAuthStatus(String type){
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("event", "webViewRefreshAuthStatus");
+            Map<String,String> stringMap = new HashMap<String,String>();
+            stringMap.put("type",type);
+            jsonObject.put("data",stringMap);
+            webView.loadUrl("javascript:xyqbNativeEvent(" + jsonObject + ")");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -203,7 +230,7 @@ public class WebActivity extends Activity {
         super.onActivityResult(requestCode,resultCode,data);
         if(REFRESH_AUTH_STATUS_CODE==requestCode && resultCode==RESULT_OK ){
             //网页爬虫授权完成后返回上级页面刷新状态
-            webView.reload();
+            //webView.reload();
         }
     }
 
