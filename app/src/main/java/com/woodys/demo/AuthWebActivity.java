@@ -232,7 +232,7 @@ public class AuthWebActivity extends TitleBarActivity {
                                         @Override
                                         public void run() {
                                             helperController.showSuccessView();
-                                            setDownTimerschedule(4*1000,1500);
+                                            setDownTimerschedule(4*1000,2000);
                                         }
                                     }, 500);
                                 }
@@ -242,11 +242,11 @@ public class AuthWebActivity extends TitleBarActivity {
                             break;
                         case StateViewType.LAYOUT_ERROR_TYPE:
                             helperController.showErrorView();
-                            setDownTimerschedule(4*1000,1500);
+                            setDownTimerschedule(4*1000,2000);
                             break;
                         case StateViewType.LAYOUT_SUCCESS_TYPE:
                             helperController.showSuccessView();
-                            setDownTimerschedule(4*1000,1500);
+                            setDownTimerschedule(4*1000,2000);
                             break;
                     }
                 }
@@ -539,12 +539,6 @@ public class AuthWebActivity extends TitleBarActivity {
         customView = null;
         customViewCallback.onCustomViewHidden();
         webView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void finish() {
-        RxBus.INSTANCE.post(new RefreshStatus(webType));
-        super.finish();
     }
 
     /**
