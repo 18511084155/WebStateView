@@ -98,8 +98,8 @@ public class WebActivity extends Activity {
             }
         });
 
-        //String url = "http://192.168.28.30:8080/test/demo.html";
-        String url ="http://192.168.28.30:7020/auth-page";
+        String url = "http://192.168.28.30:8080/test/demo.html";
+        //String url ="http://192.168.28.30:7020/auth-page";
         //String url = "http://www.baidu.com/";
         //webView.loadUrl(url);
 
