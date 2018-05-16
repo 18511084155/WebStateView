@@ -116,6 +116,20 @@ public class WebActivity extends Activity {
                 webView.reload();
             }
         });
+
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(webView.getContext(), OtherWebviewActivity.class);
+                //用Bundle携带数据
+                Bundle bundle = new Bundle();
+                bundle.putString("turl", "https://m.xyqb.com/app-landing?registerFrom=217&channelId=1&token=c15623e8-7ca5-421c-9806-291328e0d898&appChannel=ceshi&appName=xinyongqianbao&authPage=auth-page&bindingPage=loan/card-binding");
+                bundle.putString("type", "1");
+                intent.putExtras(bundle);
+                startActivityForResult(intent, Constant.RESULTZHIFUBAO);
+
+            }
+        });
     }
 
     public void initSocketClient() {

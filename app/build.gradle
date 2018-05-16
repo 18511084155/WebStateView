@@ -40,7 +40,7 @@ dependencies {
 
    //项目中引入的libs
     compile 'com.woodys.libsocket:socketclient:1.2.0'
-    compile 'com.woodys.devicelib:devicesdk:1.1.0'
+    compile 'com.woodys.devicelib:devicesdk:1.1.1'
     //compile 'com.woodys.stateview:webstatelibrary:1.0.1'
 
     compile 'com.woodys.keyboard:inputmethodholder:1.1.0'
