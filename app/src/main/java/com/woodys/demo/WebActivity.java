@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
 import android.view.View;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
@@ -19,18 +18,14 @@ import android.widget.Toast;
 import com.financial.quantgroup.v2.bus.RxBus;
 import com.woodys.demo.entity.DataStateType;
 import com.woodys.demo.entity.RefreshStatus;
-import com.woodys.demo.entity.StateViewType;
 import com.woodys.libsocket.sdk.ConnectionInfo;
 import com.woodys.libsocket.sdk.OkSocket;
 import com.woodys.libsocket.sdk.OkSocketOptions;
 import com.woodys.libsocket.sdk.SocketActionAdapter;
-import com.woodys.libsocket.sdk.bean.IPulseSendable;
-import com.woodys.libsocket.sdk.bean.ISendable;
 import com.woodys.libsocket.sdk.bean.OriginalData;
 import com.woodys.libsocket.sdk.connection.IConnectionManager;
 import com.woodys.libsocket.sdk.connection.NoneReconnect;
 import com.woodys.libsocket.sdk.protocol.IHeaderProtocol;
-import com.woodys.stateview.ViewHelperController;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,12 +47,13 @@ public class WebActivity extends Activity {
     WebView webView = null;
 
     private IConnectionManager mManager;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.webview);
 
-        webView=(WebView) findViewById(R.id.web_view);
+        webView = (WebView) findViewById(R.id.web_view);
         WebSettings webSetting = webView.getSettings();
         webSetting.setJavaScriptEnabled(true);
         webSetting.setJavaScriptCanOpenWindowsAutomatically(true);
@@ -82,10 +78,10 @@ public class WebActivity extends Activity {
 
 
         webView.setWebChromeClient(
-            new CustomChromeClient("xyqbNative", HostJsScope.class)
+                new CustomChromeClient("xyqbNative", HostJsScope.class)
         );
 
-        webView.setWebViewClient(new WebViewClient(){
+        webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);
@@ -161,7 +157,7 @@ public class WebActivity extends Activity {
             public Unit invoke(DataStateType item) {
                 if (null != item) {
                     //上传信息
-                    SendMessageUtils.sendMessage(mManager,item.type,item.event,item.value,item.messageCallback);
+                    SendMessageUtils.sendMessage(mManager, item.type, item.event, item.value, item.messageCallback);
                 }
                 return null;
             }
@@ -217,13 +213,13 @@ public class WebActivity extends Activity {
     /**
      * 网页爬虫授权完成后返回上级页面刷新状态
      */
-    private void refreshAuthStatus(String type){
+    private void refreshAuthStatus(String type) {
         try {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("event", "webViewRefreshAuthStatus");
-            Map<String,String> stringMap = new HashMap<String,String>();
-            stringMap.put("type",type);
-            jsonObject.put("data",stringMap);
+            Map<String, String> stringMap = new HashMap<String, String>();
+            stringMap.put("type", type);
+            jsonObject.put("data", stringMap);
             webView.loadUrl("javascript:xyqbNativeEvent(" + jsonObject + ")");
         } catch (JSONException e) {
             e.printStackTrace();
@@ -242,8 +238,8 @@ public class WebActivity extends Activity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
-        if(REFRESH_AUTH_STATUS_CODE==requestCode && resultCode==RESULT_OK ){
+        super.onActivityResult(requestCode, resultCode, data);
+        if (REFRESH_AUTH_STATUS_CODE == requestCode && resultCode == RESULT_OK) {
             //网页爬虫授权完成后返回上级页面刷新状态
             //webView.reload();
         }
@@ -251,7 +247,7 @@ public class WebActivity extends Activity {
 
     public class CustomChromeClient extends InjectedChromeClient {
 
-        public CustomChromeClient (String injectedName, Class injectedCls) {
+        public CustomChromeClient(String injectedName, Class injectedCls) {
             super(injectedName, injectedCls);
         }
 
@@ -269,7 +265,7 @@ public class WebActivity extends Activity {
         }
 
         @Override
-        public void onProgressChanged (WebView view, int newProgress) {
+        public void onProgressChanged(WebView view, int newProgress) {
             super.onProgressChanged(view, newProgress);
             // to do your work
             // ...
