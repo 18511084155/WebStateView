@@ -13,7 +13,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
@@ -275,7 +274,7 @@ public class AuthHostJsScope {
             String type = (String) webView.getTag();
             String data = json.getString("data");
             //认证成功
-            RxBus.INSTANCE.post(new DataStateType(type, data));
+            RxBus.INSTANCE.post(new DataStateType(type,"DATA", data,null));
         } catch (Exception e) {
         }
     }

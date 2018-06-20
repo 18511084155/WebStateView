@@ -98,12 +98,13 @@ public class WebActivity extends Activity {
             }
         });
 
-        String url = "http://192.168.28.30:8080/test/demo.html";
+        //String url = "http://192.168.28.30:8080/test/demo.html";
+        String url = "http://192.168.28.30:8080/test/index.html";
         //String url ="http://192.168.28.30:7020/auth-page";
         //String url = "http://www.baidu.com/";
-        //webView.loadUrl(url);
+        webView.loadUrl(url);
 
-        webView.loadUrl("file:///android_asset/index.html");
+        //webView.loadUrl("file:///android_asset/index.html");
 
 
         //初始化SocketClient，打开通道
@@ -160,7 +161,7 @@ public class WebActivity extends Activity {
             public Unit invoke(DataStateType item) {
                 if (null != item) {
                     //上传信息
-                    SendMessageUtils.sendMessage(mManager,item.type,item.value);
+                    SendMessageUtils.sendMessage(mManager,item.type,item.event,item.value,item.messageCallback);
                 }
                 return null;
             }

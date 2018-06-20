@@ -32,17 +32,17 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import com.financial.quantgroup.v2.bus.RxBus;
+import com.google.gson.JsonObject;
 import com.quant.titlebar.TitleBarActivity;
 import com.woodys.demo.entity.DataStateType;
 import com.woodys.demo.entity.RefreshStatus;
 import com.woodys.demo.entity.StateViewType;
+import com.woodys.demo.utils.PackageUtils;
 import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.systembar.SystemBarTintUtils;
 import com.woodys.keyboard.InputMethodHolder;
 import com.woodys.keyboard.OnInterceptMethodListener;
 import com.woodys.stateview.ViewHelperController;
-
-import org.json.JSONObject;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -101,6 +101,9 @@ public class AuthWebActivity extends TitleBarActivity {
         //设置类型
         webView.setTag(webType);
         //设置webview的配置信息
+        if (TextUtils.isEmpty(userAgent)) {
+            userAgent = userAgent + " xyqb/" + PackageUtils.getAppVersion();
+        }
         initWebSettings(webView, userAgent);
         //设置webview的事件监听操作
         webView.setWebViewClient(new MyWebViewClient());
@@ -111,6 +114,7 @@ public class AuthWebActivity extends TitleBarActivity {
         helperController = getViewHelperController();
         //进行webview的地址跳转操作
         if (!TextUtils.isEmpty(webUrl)) {
+            RxBus.INSTANCE.post(new DataStateType(webType, "BEGIN", null, null));
             //显示内容
             helperController.restore();
             progressBar.startProgressAnim();
@@ -153,7 +157,7 @@ public class AuthWebActivity extends TitleBarActivity {
         webSetting.setAllowFileAccess(true);
         webSetting.setSupportZoom(true);
         webSetting.setBuiltInZoomControls(false);
-        webSetting.setCacheMode(WebSettings.LOAD_DEFAULT);
+        webSetting.setCacheMode(WebSettings.LOAD_NO_CACHE);
         webSetting.setDomStorageEnabled(true);
         webSetting.setDatabaseEnabled(true);
         webSetting.setMinimumFontSize(1);
@@ -169,11 +173,20 @@ public class AuthWebActivity extends TitleBarActivity {
         File filesPicDir = new File(getCacheDir(), PICASSO_CACHE);
         webSetting.setGeolocationDatabasePath(PICASSO_CACHE);
         webSetting.setAppCachePath(filesPicDir.getAbsolutePath());
-        webSetting.setAppCacheEnabled(true);
+        webSetting.setAppCacheEnabled(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            try {
+                webView.removeJavascriptInterface("searchBoxJavaBridge_");
+                webView.removeJavascriptInterface("accessibility");
+                webView.removeJavascriptInterface("accessibilityTraversal");
+            } catch (Throwable tr) {
+                tr.printStackTrace();
+            }
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             WebView.setWebContentsDebuggingEnabled(true);
         }
-
     }
 
     /**
@@ -183,37 +196,6 @@ public class AuthWebActivity extends TitleBarActivity {
      */
     private ViewHelperController getViewHelperController() {
         final ViewHelperController helperController = ViewHelperController.createCaseViewHelperController(webView);
-        findViewById(R.id.text1).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                helperController.restore();
-            }
-        });
-        findViewById(R.id.text2).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String javascript=String.format("window.location.href='%s';", "https://pages.tmall.com/wow/jifen/act/point-details");
-                //webView.loadUrl("javascript:" + javascript);
-                helperController.showLoadingView();
-            }
-        });
-
-        findViewById(R.id.text3).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String javascript=String.format("window.location.href='%s';", "https://member1.taobao.com/member/fresh/deliver_address.htm");
-                //webView.loadUrl("javascript:" + javascript);
-                helperController.showErrorView();
-            }
-        });
-        findViewById(R.id.text4).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                helperController.showSuccessView();
-            }
-        });
-
-
         RxBus.INSTANCE.subscribe(this, StateViewType.class, new Function1<StateViewType, Unit>() {
             @Override
             public Unit invoke(StateViewType item) {
@@ -232,7 +214,7 @@ public class AuthWebActivity extends TitleBarActivity {
                                         @Override
                                         public void run() {
                                             helperController.showSuccessView();
-                                            setDownTimerschedule(4*1000,2000);
+                                            setDownTimerschedule(4 * 1000, 2 * 1000);
                                         }
                                     }, 500);
                                 }
@@ -242,11 +224,11 @@ public class AuthWebActivity extends TitleBarActivity {
                             break;
                         case StateViewType.LAYOUT_ERROR_TYPE:
                             helperController.showErrorView();
-                            setDownTimerschedule(4*1000,2000);
+                            setDownTimerschedule(4 * 1000, 2 * 1000);
                             break;
                         case StateViewType.LAYOUT_SUCCESS_TYPE:
                             helperController.showSuccessView();
-                            setDownTimerschedule(4*1000,2000);
+                            setDownTimerschedule(4 * 1000, 2 * 1000);
                             break;
                     }
                 }
@@ -308,7 +290,7 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
-            //if (BuildConfig.DEBUG) Log.e("测试", "====onProgressChanged====url:"+view.getUrl() +"  newProgress:" + newProgress);
+            super.onProgressChanged(view, newProgress);
             if (progressBar.getProgress() < progressBar.getFirstProgress()) {
                 progressBar.passProgressAnim(new Function0<Unit>() {
                     @Override
@@ -318,7 +300,6 @@ public class AuthWebActivity extends TitleBarActivity {
                     }
                 });
             }
-            super.onProgressChanged(view, newProgress);
         }
 
         @Override
@@ -373,10 +354,12 @@ public class AuthWebActivity extends TitleBarActivity {
         @Override
         public void onDownloadStart(String url, String userAgent,
                                     String contentDisposition, String mimetype, long contentLength) {
-            Uri uri = Uri.parse(url);
-            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            startActivity(intent);
-            finish();
+            if(webView != null && webView.getWindowToken()!=null) {
+                Uri uri = Uri.parse(url);
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
         }
 
     }
@@ -386,6 +369,10 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            if (!url.startsWith("tmall://") && !url.startsWith("tbopen://")) {
+                super.onPageStarted(view, url, favicon);
+            }
+            if (BuildConfig.DEBUG) Log.e("测试", "====onPageStarted====  url:" + url);
             try {
                 progressBar.setProgress(0);
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
@@ -396,11 +383,6 @@ public class AuthWebActivity extends TitleBarActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            if(!url.startsWith("tmall://") && !url.startsWith("tbopen://") ) {
-                super.onPageStarted(view, url, favicon);
-            }
-            if (BuildConfig.DEBUG) Log.e("测试", "====onPageStarted====  url:" + url);
         }
 
         public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
@@ -416,12 +398,15 @@ public class AuthWebActivity extends TitleBarActivity {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (BuildConfig.DEBUG) Log.e("测试", "====shouldOverrideUrlLoading====  url:" + url);
-            if (null != webReturnUrl && webReturnUrl.equals(url)) helperController.showLoadingView();
-            if(!url.startsWith("tmall://") && !url.startsWith("tbopen://") ) {
+            if (null != webReturnUrl && webReturnUrl.equals(url)) {
+                helperController.showLoadingView();
+            }
+            if (!url.startsWith("tmall://") && !url.startsWith("tbopen://")) {
                 view.loadUrl(url);
             }
             return true;
         }
+
         @Override
         public void onReceivedError(WebView view, int errorCode,
                                     String description, String failingUrl) {
@@ -435,28 +420,32 @@ public class AuthWebActivity extends TitleBarActivity {
         }
 
         @Override
-        public void onPageFinished(WebView view, String url) {
+        public void onPageFinished(WebView view, final String url) {
             super.onPageFinished(view, url);
             if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  url:" + url);
             if (null == view) return;
             //注入返回的js代码
             if (!TextUtils.isEmpty(webJavaScript)) {
-                view.loadUrl("javascript:" + webJavaScript);
+                webView.loadUrl("javascript:" + webJavaScript);
             }
             progressBar.setVisibility(View.GONE);
             if (null != webReturnUrl && webReturnUrl.equals(url)) {
-                CookieManager cookieManager = CookieManager.getInstance();
-                String cookieStr = cookieManager.getCookie(url);
-
-                JSONObject jsonObject = null;
                 try {
-                    jsonObject=new JSONObject();
-                    jsonObject.put("userAgent",view.getSettings().getUserAgentString());
-                    jsonObject.put("cookie",cookieStr);
                     //认证成功
-                    RxBus.INSTANCE.post(new DataStateType(webType, jsonObject.toString()));
-                    if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  cookieStr:" + cookieStr);
-                } catch (Exception e) { }
+                    final String userAgentString = webView.getSettings().getUserAgentString();
+                    RxBus.INSTANCE.post(new DataStateType(webType, "DATA", null, new JsonCallback() {
+                        @Override
+                        public String convertData(JsonObject jsonObject) {
+                            if (null == jsonObject) return null;
+                            jsonObject.addProperty("userAgent", userAgentString);
+                            CookieManager cookieManager = CookieManager.getInstance();
+                            String cookieStr = cookieManager.getCookie(url);
+                            jsonObject.addProperty("cookie", cookieStr);
+                            return jsonObject.toString();
+                        }
+                    }));
+                } catch (Exception e) {
+                }
             }
         }
     }
@@ -552,11 +541,12 @@ public class AuthWebActivity extends TitleBarActivity {
         CountDownTimer timer = new CountDownTimer(millis, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                if(!isTimeMillis[0] && millisUntilFinished <= timeMillis){
+                if (!isTimeMillis[0] && millisUntilFinished <= timeMillis) {
                     isTimeMillis[0] = true;
                     RxBus.INSTANCE.post(new RefreshStatus(webType));
                 }
             }
+
             @Override
             public void onFinish() {
                 //倒计时完毕了
