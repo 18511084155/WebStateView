@@ -197,6 +197,32 @@ public class AuthWebActivity extends TitleBarActivity {
      */
     private ViewHelperController getViewHelperController() {
         final ViewHelperController helperController = ViewHelperController.createCaseViewHelperController(webView);
+
+        findViewById(R.id.text1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                helperController.restore();
+            }
+        });
+        findViewById(R.id.text2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                helperController.showLoadingView();
+            }
+        });
+        findViewById(R.id.text3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                helperController.showErrorView();
+            }
+        });
+        findViewById(R.id.text4).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                helperController.showSuccessView();
+            }
+        });
+
         RxBus.INSTANCE.subscribe(this, StateViewType.class, new Function1<StateViewType, Unit>() {
             @Override
             public Unit invoke(StateViewType item) {
