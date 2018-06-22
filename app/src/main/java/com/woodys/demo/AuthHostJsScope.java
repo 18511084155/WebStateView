@@ -25,6 +25,7 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import com.financial.quantgroup.v2.bus.RxBus;
+import com.google.gson.JsonObject;
 import com.woodys.demo.entity.DataStateType;
 import com.woodys.demo.entity.StateViewType;
 import com.woodys.demo.utils.TaskExecutor;
@@ -252,6 +253,21 @@ public class AuthHostJsScope {
         } catch (Exception e) {
         }
         if (!"0001".equals(errorCode)) {
+            try {
+                String type = (String) webView.getTag();
+                String data = json.getString("data");
+                //认证成功
+                RxBus.INSTANCE.post(new DataStateType(type,"ERROR", data,new JsonCallback() {
+                    @Override
+                    public String convertData(JsonObject jsonObject) {
+                        if (null == jsonObject) return null;
+                        jsonObject.addProperty("time", WebViewUseReduceTime.getUseReduceTimeByReplace());
+                        return jsonObject.toString();
+                    }
+                }));
+            } catch (Exception e) {
+            }
+
             //认证失败
             RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_ERROR_TYPE, 0));
         }
@@ -274,7 +290,14 @@ public class AuthHostJsScope {
             String type = (String) webView.getTag();
             String data = json.getString("data");
             //认证成功
-            RxBus.INSTANCE.post(new DataStateType(type,"DATA", data,null));
+            RxBus.INSTANCE.post(new DataStateType(type,"DATA", data,new JsonCallback() {
+                @Override
+                public String convertData(JsonObject jsonObject) {
+                    if (null == jsonObject) return null;
+                    jsonObject.addProperty("time", WebViewUseReduceTime.getUseReduceTimeByReplace());
+                    return jsonObject.toString();
+                }
+            }));
         } catch (Exception e) {
         }
     }

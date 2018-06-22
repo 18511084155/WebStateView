@@ -74,11 +74,12 @@ public class AuthWebActivity extends TitleBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_auth_webview);
         SystemBarTintUtils.initSystemBarTint(this, Res.getColor(R.color.colorPrimary));
+        WebViewUseReduceTime.initUseReduceTime();
         //初始化view
         titleBar.setOnBackClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                finishActivity();
             }
         });
         webView = (WebView) findViewById(R.id.web_view);
@@ -339,6 +340,27 @@ public class AuthWebActivity extends TitleBarActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        finishActivity();
+    }
+
+    /**
+     * 方便统计是否是用户主动关闭的
+     */
+    public void finishActivity() {
+        RxBus.INSTANCE.post(new DataStateType(webType, "FINISH", null,new JsonCallback() {
+            @Override
+            public String convertData(JsonObject jsonObject) {
+                if (null == jsonObject) return null;
+                jsonObject.addProperty("time", WebViewUseReduceTime.getUseReduceTimeByReplace());
+                return jsonObject.toString();
+            }
+        }));
+        RxBus.INSTANCE.post(new RefreshStatus(webType));
+        finish();
+    }
+
+    @Override
     public void onDestroy() {
         if (webView != null) {
             webView.destroy();
@@ -363,7 +385,6 @@ public class AuthWebActivity extends TitleBarActivity {
         }
 
     }
-
 
     private class MyWebViewClient extends WebViewClient {
 
