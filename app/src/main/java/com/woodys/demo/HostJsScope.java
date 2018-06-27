@@ -217,8 +217,8 @@ public class HostJsScope {
             intent.putExtra("type",json.getString("type"));
             intent.putExtra("url",json.getString("url"));
             intent.putExtra("javascript",json.getString("javascriptCode"));
-            intent.putExtra("userAgent",json.getString("userAgent"));
             intent.putExtra("returnUrl",json.getString("returnUrl"));
+            intent.putExtra("userAgent",json.getString("userAgent"));
         } catch (JSONException e) {
             e.printStackTrace();
         }

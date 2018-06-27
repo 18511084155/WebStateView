@@ -66,12 +66,16 @@ public class AuthWebActivity extends TitleBarActivity {
     private String webType;
     private String webJavaScript;
     private String webReturnUrl;
+    private long appUseTime = 0L;
+    //是否有cookie信息
+    private boolean isHaveCookie = false;
 
     private ViewHelperController helperController;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        appUseTime = System.currentTimeMillis();
         setContentView(R.layout.layout_auth_webview);
         SystemBarTintUtils.initSystemBarTint(this, Res.getColor(R.color.colorPrimary));
         WebViewUseReduceTime.initUseReduceTime();
@@ -207,7 +211,10 @@ public class AuthWebActivity extends TitleBarActivity {
         findViewById(R.id.text2).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                helperController.showLoadingView();
+                //helperController.showLoadingView();
+                String url="https://member1.taobao.com/member/fresh/account_profile.htm";
+                String javascript = String.format("window.location.href='%s';", url);
+                webView.loadUrl("javascript:" + javascript);
             }
         });
         findViewById(R.id.text3).setOnClickListener(new View.OnClickListener() {
@@ -241,6 +248,9 @@ public class AuthWebActivity extends TitleBarActivity {
                                         @Override
                                         public void run() {
                                             helperController.showSuccessView();
+                                            if (BuildConfig.DEBUG) {
+                                                Log.e("测试", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                                            }
                                             setDownTimerschedule(4 * 1000, 2 * 1000);
                                         }
                                     }, 500);
@@ -251,10 +261,16 @@ public class AuthWebActivity extends TitleBarActivity {
                             break;
                         case StateViewType.LAYOUT_ERROR_TYPE:
                             helperController.showErrorView();
+                            if (BuildConfig.DEBUG) {
+                                Log.e("测试", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                            }
                             setDownTimerschedule(4 * 1000, 2 * 1000);
                             break;
                         case StateViewType.LAYOUT_SUCCESS_TYPE:
                             helperController.showSuccessView();
+                            if (BuildConfig.DEBUG) {
+                                Log.e("测试", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                            }
                             setDownTimerschedule(4 * 1000, 2 * 1000);
                             break;
                     }
@@ -374,7 +390,10 @@ public class AuthWebActivity extends TitleBarActivity {
      * 方便统计是否是用户主动关闭的
      */
     public void finishActivity() {
-        RxBus.INSTANCE.post(new DataStateType(webType, "FINISH", null,new JsonCallback() {
+        if (BuildConfig.DEBUG) {
+            Log.e("测试", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+        }
+        RxBus.INSTANCE.post(new DataStateType(webType, "QUIT", null,new JsonCallback() {
             @Override
             public String convertData(JsonObject jsonObject) {
                 if (null == jsonObject) return null;
@@ -476,23 +495,19 @@ public class AuthWebActivity extends TitleBarActivity {
                 webView.loadUrl("javascript:" + webJavaScript);
             }
             progressBar.setVisibility(View.GONE);
-            if (null != webReturnUrl && webReturnUrl.equals(url)) {
+            if (!isHaveCookie && null != webReturnUrl && webReturnUrl.equals(url)) {
                 try {
+                    //是否有cookie信息
+                    isHaveCookie = true;
                     //认证成功
-                    final String userAgentString = webView.getSettings().getUserAgentString();
-                    RxBus.INSTANCE.post(new DataStateType(webType, "DATA", null, new JsonCallback() {
-                        @Override
-                        public String convertData(JsonObject jsonObject) {
-                            if (null == jsonObject) return null;
-                            jsonObject.addProperty("userAgent", userAgentString);
-                            CookieManager cookieManager = CookieManager.getInstance();
-                            String cookieStr = cookieManager.getCookie(url);
-                            jsonObject.addProperty("cookie", cookieStr);
-                            return jsonObject.toString();
-                        }
-                    }));
-                } catch (Exception e) {
-                }
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("type", -1);
+                    jsonObject.addProperty("userAgent", webView.getSettings().getUserAgentString());
+                    CookieManager cookieManager = CookieManager.getInstance();
+                    String cookieStr = cookieManager.getCookie(url);
+                    jsonObject.addProperty("cookie", cookieStr);
+                    RxBus.INSTANCE.post(new DataStateType(webType, "DATA", jsonObject.toString(), null));
+                } catch (Exception e) { }
             }
         }
     }
@@ -525,7 +540,6 @@ public class AuthWebActivity extends TitleBarActivity {
             callback.onCustomViewHidden();
             return;
         }
-        getWindow().getDecorView();
         FrameLayout decor = (FrameLayout) getWindow().getDecorView();
         fullscreenContainer = new FullscreenHolder(this);
         /**

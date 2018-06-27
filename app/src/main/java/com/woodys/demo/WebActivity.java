@@ -95,12 +95,12 @@ public class WebActivity extends Activity {
         });
 
         //String url = "http://192.168.28.30:8080/test/demo.html";
-        String url = "http://192.168.28.30:8080/test/index.html";
-        //String url ="http://192.168.28.30:7020/auth-page";
+        //String url = "http://192.168.28.218:8080/index.html";
+        String url ="http://192.168.28.218:7020/agreement-2";
         //String url = "http://www.baidu.com/";
         webView.loadUrl(url);
 
-        //webView.loadUrl("file:///android_asset/index.html");
+        //webView.loadUrl("file:///android_asset/index2.html");
 
 
         //初始化SocketClient，打开通道

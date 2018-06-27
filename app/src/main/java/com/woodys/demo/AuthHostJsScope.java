@@ -250,14 +250,12 @@ public class AuthHostJsScope {
         String errorCode = null;
         try {
             errorCode = json.getString("errorCode");
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
         if (!"0001".equals(errorCode)) {
             try {
                 String type = (String) webView.getTag();
-                String data = json.getString("data");
                 //认证成功
-                RxBus.INSTANCE.post(new DataStateType(type,"ERROR", data,new JsonCallback() {
+                RxBus.INSTANCE.post(new DataStateType(type,"ERROR", json.toString(),new JsonCallback() {
                     @Override
                     public String convertData(JsonObject jsonObject) {
                         if (null == jsonObject) return null;
@@ -265,8 +263,7 @@ public class AuthHostJsScope {
                         return jsonObject.toString();
                     }
                 }));
-            } catch (Exception e) {
-            }
+            } catch (Exception e) { }
 
             //认证失败
             RxBus.INSTANCE.post(new StateViewType(StateViewType.LAYOUT_ERROR_TYPE, 0));

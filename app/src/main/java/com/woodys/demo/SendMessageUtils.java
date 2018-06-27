@@ -2,6 +2,7 @@ package com.woodys.demo;
 
 import android.content.Context;
 import android.util.Base64;
+import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -118,19 +119,23 @@ public class SendMessageUtils {
     private static String getMessage(String type,String event,String data,JsonCallback messageCallback){
         MessageBean messageBean=new MessageBean();
         /** 下面四个字段必须传递 **/
-        messageBean.userId= "18511084155";
-        messageBean.event= event ;
-        messageBean.userSource=type;
-        messageBean.appId="0008";
+        messageBean.userId = "18511084155";
+        messageBean.event = event ;
+        messageBean.userSource = type;
+        messageBean.appId = "0008";
         /** 下面两个字段可传递 **/
-        messageBean.data= data;
-        messageBean.registerFrom= "217";
+        messageBean.data = data;
+        messageBean.registerFrom = "217";
+        messageBean.versionCode = "6381";
         String jsonStr = null;
         if(messageCallback!=null){
             JsonObject jsonObject= new JsonParser().parse(JsonUtils.toJson(messageBean)).getAsJsonObject();
             jsonStr = messageCallback.convertData(jsonObject);
         }else {
             jsonStr = JsonUtils.toJson(messageBean);
+        }
+        if (BuildConfig.DEBUG) {
+            Log.e("测试", "====getMessage====  jsonStr:" + jsonStr);
         }
         return jsonStr;
     }

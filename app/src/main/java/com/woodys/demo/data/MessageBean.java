@@ -7,4 +7,5 @@ public class MessageBean {
     public String data;
     public String appId;
     public String registerFrom;
+    public String versionCode;
 }
