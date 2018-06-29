@@ -106,8 +106,11 @@ public class AuthWebActivity extends TitleBarActivity {
         //设置类型
         webView.setTag(webType);
         //设置webview的配置信息
-        if (TextUtils.isEmpty(userAgent)) {
+        String ua = webView.getSettings().getUserAgentString();
+        if (!TextUtils.isEmpty(userAgent)) {
             userAgent = userAgent + " xyqb/" + PackageUtils.getAppVersion();
+        } else {
+            userAgent = ua + " xyqb/" + PackageUtils.getAppVersion();
         }
         initWebSettings(webView, userAgent);
         //设置webview的事件监听操作
