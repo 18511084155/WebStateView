@@ -100,7 +100,7 @@ public class WebActivity extends Activity {
         //String url = "http://www.baidu.com/";
         webView.loadUrl(url);
 
-        //webView.loadUrl("file:///android_asset/index2.html");
+        //webView.loadUrl("file:///android_asset/index.html");
 
 
         //初始化SocketClient，打开通道
@@ -125,6 +125,13 @@ public class WebActivity extends Activity {
                 intent.putExtras(bundle);
                 startActivityForResult(intent, Constant.RESULTZHIFUBAO);
 
+            }
+        });
+
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(webView.getContext(), MainActivity.class));
             }
         });
     }

@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.financial.quantgroup.v2.bus.RxBus;
 import com.woodys.demo.entity.StateViewType;
+import com.woodys.demo.utils.JsonUtils;
 import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.TaskExecutor;
 
@@ -30,6 +31,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -212,14 +214,17 @@ public class HostJsScope {
     public static void webViewAuth(WebView webView, JSONObject json) {
         Context viewContext = webView.getContext();
         Intent intent = new Intent(viewContext, AuthWebActivity.class);
+        intent.putExtra("title", Res.getString(R.string.webview_auth_title));
+        HashMap<String, Object> jsonMap = null;
         try {
-            intent.putExtra("title", Res.getString(R.string.webview_auth_title));
-            intent.putExtra("type",json.getString("type"));
-            intent.putExtra("url",json.getString("url"));
-            intent.putExtra("javascript",json.getString("javascriptCode"));
-            intent.putExtra("returnUrl",json.getString("returnUrl"));
-            intent.putExtra("userAgent",json.getString("userAgent"));
-        } catch (JSONException e) {
+            jsonMap =JsonUtils.fromJson(json);
+            intent.putExtra("type",(String) jsonMap.get("type"));
+            intent.putExtra("url", (String) jsonMap.get("url"));
+            intent.putExtra("javascript",(String) jsonMap.get("javascriptCode"));
+            intent.putExtra("returnUrl",(String) jsonMap.get("returnUrl"));
+            intent.putExtra("userAgent",(String) jsonMap.get("userAgent"));
+            intent.putExtra("injectedUrls",(String) jsonMap.get("injectedUrls"));
+        } catch (Exception e) {
             e.printStackTrace();
         }
         ((Activity)viewContext).startActivityForResult(intent,WebActivity.REFRESH_AUTH_STATUS_CODE);

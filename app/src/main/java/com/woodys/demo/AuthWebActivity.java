@@ -32,11 +32,13 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import com.financial.quantgroup.v2.bus.RxBus;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.quant.titlebar.TitleBarActivity;
 import com.woodys.demo.entity.DataStateType;
 import com.woodys.demo.entity.RefreshStatus;
 import com.woodys.demo.entity.StateViewType;
+import com.woodys.demo.utils.JsonUtils;
 import com.woodys.demo.utils.PackageUtils;
 import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.systembar.SystemBarTintUtils;
@@ -45,7 +47,11 @@ import com.woodys.keyboard.OnInterceptMethodListener;
 import com.woodys.stateview.ViewHelperController;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import cn.pedant.SafeWebViewBridge.InjectedChromeClient;
 import cz.widget.progress.ProgressBar;
@@ -66,6 +72,7 @@ public class AuthWebActivity extends TitleBarActivity {
     private String webType;
     private String webJavaScript;
     private String webReturnUrl;
+    private List<String> injectedUrls=null;
     private long appUseTime = 0L;
     //是否有cookie信息
     private boolean isHaveCookie = false;
@@ -99,6 +106,10 @@ public class AuthWebActivity extends TitleBarActivity {
             webType = arguments.getString("type");
             webJavaScript = arguments.getString("javascript");
             webReturnUrl = arguments.getString("returnUrl");
+            String injectedUrlsStr = arguments.getString("injectedUrls");
+            if(!TextUtils.isEmpty(injectedUrlsStr)){
+                injectedUrls= JsonUtils.getLists(injectedUrlsStr, String.class);
+            }
             userAgent = arguments.getString("userAgent");
         }
         if (!TextUtils.isEmpty(webTitle)) titleBar.setTitleText(webTitle);
@@ -494,7 +505,8 @@ public class AuthWebActivity extends TitleBarActivity {
             if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  url:" + url);
             if (null == view) return;
             //注入返回的js代码
-            if (!TextUtils.isEmpty(webJavaScript)) {
+            if (!TextUtils.isEmpty(webJavaScript) && (null==injectedUrls || (null!=injectedUrls && injectedUrls.size()<=0) || (null!=injectedUrls && injectedUrls.size()>0 &&injectedUrls.contains(url)))) {
+                if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished:webJavaScript====  url:" + url);
                 webView.loadUrl("javascript:" + webJavaScript);
             }
             progressBar.setVisibility(View.GONE);

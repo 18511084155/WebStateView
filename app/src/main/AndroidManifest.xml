@@ -79,6 +79,7 @@
         </activity>
         <activity android:name=".AuthWebActivity"/>
         <activity android:name=".OtherWebviewActivity"/>
+        <activity android:name=".MainActivity"/>
     </application>
 
 </manifest>
