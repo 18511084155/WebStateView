@@ -100,8 +100,8 @@ public class WebActivity extends Activity {
         //String url = "http://www.baidu.com/";
         webView.loadUrl(url);
 
-        //webView.loadUrl("file:///android_asset/index.html");
 
+        //webView.loadUrl("file:///android_asset/index.html");
 
         //初始化SocketClient，打开通道
         initSocketClient();

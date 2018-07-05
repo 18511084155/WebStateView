@@ -82,7 +82,6 @@ public class AuthWebActivity extends TitleBarActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        appUseTime = System.currentTimeMillis();
         setContentView(R.layout.layout_auth_webview);
         SystemBarTintUtils.initSystemBarTint(this, Res.getColor(R.color.colorPrimary));
         WebViewUseReduceTime.initUseReduceTime();
@@ -263,7 +262,7 @@ public class AuthWebActivity extends TitleBarActivity {
                                         public void run() {
                                             helperController.showSuccessView();
                                             if (BuildConfig.DEBUG) {
-                                                Log.e("测试", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
                                             }
                                             setDownTimerschedule(4 * 1000, 2 * 1000);
                                         }
@@ -276,14 +275,14 @@ public class AuthWebActivity extends TitleBarActivity {
                         case StateViewType.LAYOUT_ERROR_TYPE:
                             helperController.showErrorView();
                             if (BuildConfig.DEBUG) {
-                                Log.e("测试", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
                             }
                             setDownTimerschedule(4 * 1000, 2 * 1000);
                             break;
                         case StateViewType.LAYOUT_SUCCESS_TYPE:
                             helperController.showSuccessView();
                             if (BuildConfig.DEBUG) {
-                                Log.e("测试", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
                             }
                             setDownTimerschedule(4 * 1000, 2 * 1000);
                             break;
@@ -405,7 +404,7 @@ public class AuthWebActivity extends TitleBarActivity {
      */
     public void finishActivity() {
         if (BuildConfig.DEBUG) {
-            Log.e("测试", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+            Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
         }
         RxBus.INSTANCE.post(new DataStateType(webType, "QUIT", null,new JsonCallback() {
             @Override
@@ -479,6 +478,7 @@ public class AuthWebActivity extends TitleBarActivity {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             if (BuildConfig.DEBUG) Log.e("测试", "====shouldOverrideUrlLoading====  url:" + url);
             if (null != webReturnUrl && webReturnUrl.equals(url)) {
+                appUseTime = System.currentTimeMillis();
                 helperController.showLoadingView();
             }
             if (!url.startsWith("tmall://") && !url.startsWith("tbopen://")) {

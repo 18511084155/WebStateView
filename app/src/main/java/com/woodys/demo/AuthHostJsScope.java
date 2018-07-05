@@ -291,7 +291,9 @@ public class AuthHostJsScope {
                 @Override
                 public String convertData(JsonObject jsonObject) {
                     if (null == jsonObject) return null;
-                    jsonObject.addProperty("time", WebViewUseReduceTime.getUseReduceTimeByReplace());
+                    long useReduceTime = WebViewUseReduceTime.getUseReduceTimeByReplace();
+                    Log.e("时间", "====webViewAuthCollectionResults:时间====  useReduceTime=" + useReduceTime);
+                    jsonObject.addProperty("time", useReduceTime);
                     return jsonObject.toString();
                 }
             }));
