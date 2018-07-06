@@ -45,6 +45,7 @@ import com.woodys.demo.utils.systembar.SystemBarTintUtils;
 import com.woodys.keyboard.InputMethodHolder;
 import com.woodys.keyboard.OnInterceptMethodListener;
 import com.woodys.stateview.ViewHelperController;
+import com.woodys.stateview.circleprogress.CircleProgressView;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -254,7 +255,16 @@ public class AuthWebActivity extends TitleBarActivity {
                         case StateViewType.LAYOUT_LOADING_TYPE:
                             if (helperController.isShowLoadingView()) {
                                 int progress = item.value;
-                                helperController.setLoadingView(item.value);
+                                float currentProgress = 0l;
+                                try{
+                                    CircleProgressView mCircleView = (CircleProgressView)helperController.getLoadingView().findViewById(com.woodys.stateview.R.id.circleView);
+                                    if (null != mCircleView) {
+                                        currentProgress=  mCircleView.getCurrentValue();
+                                    }
+                                }catch (Exception e){ currentProgress = -1l; }
+                                if (currentProgress==0 || (currentProgress>0 && progress>currentProgress)) {
+                                    helperController.setLoadingView(item.value);
+                                }
                                 //当前假如进度是100，就延迟700ms显示加载成功
                                 if (progress >= 100) {
                                     titleBar.postDelayed(new Runnable() {
