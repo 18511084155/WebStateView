@@ -1,5 +1,6 @@
 package com.woodys.demo;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,7 +11,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -35,7 +35,6 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import com.financial.quantgroup.v2.bus.RxBus;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.quant.titlebar.TitleBarActivity;
 import com.woodys.demo.entity.DataStateType;
@@ -51,14 +50,7 @@ import com.woodys.stateview.ViewHelperController;
 import com.woodys.stateview.circleprogress.CircleProgressView;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import cn.pedant.SafeWebViewBridge.InjectedChromeClient;
@@ -71,7 +63,7 @@ import kotlin.jvm.functions.Function1;
  * Created by yuetao on 18/4/26.
  */
 
-public class AuthWebActivity extends TitleBarActivity {
+public class AuthWebActivity1 extends TitleBarActivity {
     private WebView webView;
     private ProgressBar progressBar;
 
@@ -80,7 +72,7 @@ public class AuthWebActivity extends TitleBarActivity {
     private String webType;
     private String webJavaScript;
     private String webReturnUrl;
-    private List<String> injectedUrls=null;
+    private List<String> injectedUrls = null;
     private long appUseTime = 0L;
     //是否有cookie信息
     private boolean isHaveCookie = false;
@@ -114,8 +106,8 @@ public class AuthWebActivity extends TitleBarActivity {
             webJavaScript = arguments.getString("javascript");
             webReturnUrl = arguments.getString("returnUrl");
             String injectedUrlsStr = arguments.getString("injectedUrls");
-            if(!TextUtils.isEmpty(injectedUrlsStr)){
-                injectedUrls= JsonUtils.getLists(injectedUrlsStr, String.class);
+            if (!TextUtils.isEmpty(injectedUrlsStr)) {
+                injectedUrls = JsonUtils.getLists(injectedUrlsStr, String.class);
             }
             userAgent = arguments.getString("userAgent");
         }
@@ -177,7 +169,6 @@ public class AuthWebActivity extends TitleBarActivity {
         //如果访问的页面中有Javascript，则webview必须设置支持Javascript
         webSetting.setJavaScriptEnabled(true);
         webSetting.setJavaScriptCanOpenWindowsAutomatically(true);
-        webSetting.setLoadsImagesAutomatically(false);
         webSetting.setUseWideViewPort(true);
         webSetting.setLoadWithOverviewMode(true);
         // 设置可以访问文件
@@ -234,7 +225,7 @@ public class AuthWebActivity extends TitleBarActivity {
             @Override
             public void onClick(View v) {
                 //helperController.showLoadingView();
-                String url="https://member1.taobao.com/member/fresh/account_profile.htm";
+                String url = "https://member1.taobao.com/member/fresh/account_profile.htm";
                 String javascript = String.format("window.location.href='%s';", url);
                 webView.loadUrl("javascript:" + javascript);
             }
@@ -264,13 +255,15 @@ public class AuthWebActivity extends TitleBarActivity {
                             if (helperController.isShowLoadingView()) {
                                 int progress = item.value;
                                 float currentProgress = 0l;
-                                try{
-                                    CircleProgressView mCircleView = (CircleProgressView)helperController.getLoadingView().findViewById(com.woodys.stateview.R.id.circleView);
+                                try {
+                                    CircleProgressView mCircleView = (CircleProgressView) helperController.getLoadingView().findViewById(com.woodys.stateview.R.id.circleView);
                                     if (null != mCircleView) {
-                                        currentProgress=  mCircleView.getCurrentValue();
+                                        currentProgress = mCircleView.getCurrentValue();
                                     }
-                                }catch (Exception e){ currentProgress = -1l; }
-                                if (currentProgress==0 || (currentProgress>0 && progress>currentProgress)) {
+                                } catch (Exception e) {
+                                    currentProgress = -1l;
+                                }
+                                if (currentProgress == 0 || (currentProgress > 0 && progress > currentProgress)) {
                                     helperController.setLoadingView(item.value);
                                 }
                                 //当前假如进度是100，就延迟700ms显示加载成功
@@ -280,7 +273,7 @@ public class AuthWebActivity extends TitleBarActivity {
                                         public void run() {
                                             helperController.showSuccessView();
                                             if (BuildConfig.DEBUG) {
-                                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis() - appUseTime) + "ms");
                                             }
                                             setDownTimerschedule(4 * 1000, 2 * 1000);
                                         }
@@ -293,14 +286,14 @@ public class AuthWebActivity extends TitleBarActivity {
                         case StateViewType.LAYOUT_ERROR_TYPE:
                             helperController.showErrorView();
                             if (BuildConfig.DEBUG) {
-                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis() - appUseTime) + "ms");
                             }
                             setDownTimerschedule(4 * 1000, 2 * 1000);
                             break;
                         case StateViewType.LAYOUT_SUCCESS_TYPE:
                             helperController.showSuccessView();
                             if (BuildConfig.DEBUG) {
-                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis() - appUseTime) + "ms");
                             }
                             setDownTimerschedule(4 * 1000, 2 * 1000);
                             break;
@@ -329,7 +322,7 @@ public class AuthWebActivity extends TitleBarActivity {
 
         @Override
         public View getVideoLoadingProgressView() {
-            FrameLayout frameLayout = new FrameLayout(AuthWebActivity.this);
+            FrameLayout frameLayout = new FrameLayout(AuthWebActivity1.this);
             frameLayout.setLayoutParams(new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT));
             return frameLayout;
         }
@@ -347,7 +340,7 @@ public class AuthWebActivity extends TitleBarActivity {
         @Override
         public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
             // to do your work
-            new AlertDialog.Builder(AuthWebActivity.this).
+            new AlertDialog.Builder(AuthWebActivity1.this).
                     setTitle("温馨提示").
                     setMessage(message).
                     setCancelable(true).
@@ -422,9 +415,9 @@ public class AuthWebActivity extends TitleBarActivity {
      */
     public void finishActivity() {
         if (BuildConfig.DEBUG) {
-            Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+            Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis() - appUseTime) + "ms");
         }
-        RxBus.INSTANCE.post(new DataStateType(webType, "QUIT", null,new JsonCallback() {
+        RxBus.INSTANCE.post(new DataStateType(webType, "QUIT", null, new JsonCallback() {
             @Override
             public String convertData(JsonObject jsonObject) {
                 if (null == jsonObject) return null;
@@ -452,7 +445,7 @@ public class AuthWebActivity extends TitleBarActivity {
         @Override
         public void onDownloadStart(String url, String userAgent,
                                     String contentDisposition, String mimetype, long contentLength) {
-            if(webView != null && webView.getWindowToken()!=null) {
+            if (webView != null && webView.getWindowToken() != null) {
                 Uri uri = Uri.parse(url);
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -463,11 +456,15 @@ public class AuthWebActivity extends TitleBarActivity {
     }
 
     private class MyWebViewClient extends WebViewClient {
-        long timer= 0l;
+        long timer = 0l;
+        boolean isInterceptRequestByResource = false;
+        boolean isInterceptRequestByJs = false;
+
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             timer = System.currentTimeMillis();
-            if (BuildConfig.DEBUG) Log.e("时间", "====onPageStarted:时间====  url:" + url+"；time="+timer);
+            if (BuildConfig.DEBUG)
+                Log.e("时间", "====onPageStarted:时间====  url:" + url + "；time=" + timer);
             if (!url.startsWith("tmall://") && !url.startsWith("tbopen://")) {
                 super.onPageStarted(view, url, favicon);
             }
@@ -492,6 +489,53 @@ public class AuthWebActivity extends TitleBarActivity {
         @Override
         public void onLoadResource(WebView view, String url) {
             super.onLoadResource(view, url);
+        }
+
+        @Nullable
+        @Override
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+            Log.e("拦截", "========shouldInterceptRequest(WebView view, WebResourceRequest request)======== url=  " + request.getUrl().toString());
+            if (request != null && request.getUrl() != null) {
+                return shouldInterceptRequestByMethod(view, request.getUrl().toString());
+            } else {
+                return null;
+            }
+        }
+
+
+        @Override
+        public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+            return shouldInterceptRequestByMethod(view, url);
+        }
+
+        private WebResourceResponse shouldInterceptRequestByMethod(WebView view, String url) {
+            Log.e("拦截", "========shouldInterceptRequest(WebView view, String url)======== url = " + url);
+            if (!TextUtils.isEmpty(url) && Uri.parse(url).getScheme() != null && isInterceptRequestUrl(url)) {
+                String scheme = Uri.parse(url).getScheme().trim();
+                if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
+                    try {
+                        return new WebResourceResponse(null, null, null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return super.shouldInterceptRequest(view, url);
+        }
+
+        public boolean isInterceptRequestUrl(String url) {
+            if (null != webReturnUrl && webReturnUrl.equals(url)) {
+                isInterceptRequestByResource = true;
+            }
+            if (url.contains("https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm")) {
+                isInterceptRequestByJs = true;
+            }
+            if ((isInterceptRequestByJs && url.contains(".js")) || (isInterceptRequestByResource && (url.contains(".css") || url.contains(".png") || url.contains(".gif") || url.contains(".ico")))) {
+                return true;
+            } else {
+                return false;
+            }
         }
 
         @Override
@@ -524,12 +568,14 @@ public class AuthWebActivity extends TitleBarActivity {
             super.onPageFinished(view, url);
             if (BuildConfig.DEBUG) Log.e("测试", "====onPageFinished====  url:" + url);
             if (null == view) return;
-            if (BuildConfig.DEBUG) Log.e("时间", "====onPageFinished:js 注入前时间====  url:" + url+";time:"+(System.currentTimeMillis()-timer));
+            if (BuildConfig.DEBUG)
+                Log.e("时间", "====onPageFinished:js 注入前时间====  url:" + url + ";time:" + (System.currentTimeMillis() - timer));
             //注入返回的js代码
-            if (!TextUtils.isEmpty(webJavaScript) && (null==injectedUrls || (null!=injectedUrls && injectedUrls.size()<=0) || (null!=injectedUrls && injectedUrls.size()>0 &&injectedUrls.contains(url)))) {
+            if (!TextUtils.isEmpty(webJavaScript) && (null == injectedUrls || (null != injectedUrls && injectedUrls.size() <= 0) || (null != injectedUrls && injectedUrls.size() > 0 && injectedUrls.contains(url)))) {
                 webView.loadUrl("javascript:" + webJavaScript);
             }
-            if (BuildConfig.DEBUG) Log.e("时间", "====onPageFinished:时间====  url:" + url+";time:"+(System.currentTimeMillis()-timer));
+            if (BuildConfig.DEBUG)
+                Log.e("时间", "====onPageFinished:时间====  url:" + url + ";time:" + (System.currentTimeMillis() - timer));
             progressBar.setVisibility(View.GONE);
             if (!isHaveCookie && null != webReturnUrl && webReturnUrl.equals(url)) {
                 try {
@@ -543,7 +589,8 @@ public class AuthWebActivity extends TitleBarActivity {
                     String cookieStr = cookieManager.getCookie(url);
                     jsonObject.addProperty("cookie", cookieStr);
                     RxBus.INSTANCE.post(new DataStateType(webType, "DATA", jsonObject.toString(), null));
-                } catch (Exception e) { }
+                } catch (Exception e) {
+                }
             }
         }
     }

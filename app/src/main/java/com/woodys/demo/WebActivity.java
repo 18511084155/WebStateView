@@ -57,6 +57,7 @@ public class WebActivity extends Activity {
         WebSettings webSetting = webView.getSettings();
         webSetting.setJavaScriptEnabled(true);
         webSetting.setJavaScriptCanOpenWindowsAutomatically(true);
+        webSetting.setLoadsImagesAutomatically(false);
         webSetting.setUseWideViewPort(true);
         webSetting.setLoadWithOverviewMode(true);
         webSetting.setAllowFileAccess(true);
