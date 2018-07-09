@@ -40,6 +40,9 @@ import com.quant.titlebar.TitleBarActivity;
 import com.woodys.demo.entity.DataStateType;
 import com.woodys.demo.entity.RefreshStatus;
 import com.woodys.demo.entity.StateViewType;
+import com.woodys.demo.interceptors.BaseInterceptor;
+import com.woodys.demo.interceptors.JsLoaderInterceptor;
+import com.woodys.demo.interceptors.ReSourceLoaderInterceptor;
 import com.woodys.demo.utils.JsonUtils;
 import com.woodys.demo.utils.PackageUtils;
 import com.woodys.demo.utils.Res;
@@ -51,6 +54,7 @@ import com.woodys.stateview.circleprogress.CircleProgressView;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.pedant.SafeWebViewBridge.InjectedChromeClient;
@@ -63,7 +67,7 @@ import kotlin.jvm.functions.Function1;
  * Created by yuetao on 18/4/26.
  */
 
-public class AuthWebActivity1 extends TitleBarActivity {
+public class AuthWebActivityNew extends TitleBarActivity {
     private WebView webView;
     private ProgressBar progressBar;
 
@@ -74,8 +78,6 @@ public class AuthWebActivity1 extends TitleBarActivity {
     private String webReturnUrl;
     private List<String> injectedUrls = null;
     private long appUseTime = 0L;
-    //是否有cookie信息
-    private boolean isHaveCookie = false;
 
     private ViewHelperController helperController;
 
@@ -124,7 +126,7 @@ public class AuthWebActivity1 extends TitleBarActivity {
         }
         initWebSettings(webView, userAgent);
         //设置webview的事件监听操作
-        webView.setWebViewClient(new MyWebViewClient());
+        webView.setWebViewClient(new MyWebViewClient(this));
         webView.setDownloadListener(new MyWebViewDownLoadListener());
         webView.setWebChromeClient(new CustomChromeClient("xyqbNative", AuthHostJsScope.class));
 
@@ -322,7 +324,7 @@ public class AuthWebActivity1 extends TitleBarActivity {
 
         @Override
         public View getVideoLoadingProgressView() {
-            FrameLayout frameLayout = new FrameLayout(AuthWebActivity1.this);
+            FrameLayout frameLayout = new FrameLayout(AuthWebActivityNew.this);
             frameLayout.setLayoutParams(new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT));
             return frameLayout;
         }
@@ -340,7 +342,7 @@ public class AuthWebActivity1 extends TitleBarActivity {
         @Override
         public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {
             // to do your work
-            new AlertDialog.Builder(AuthWebActivity1.this).
+            new AlertDialog.Builder(AuthWebActivityNew.this).
                     setTitle("温馨提示").
                     setMessage(message).
                     setCancelable(true).
@@ -456,10 +458,15 @@ public class AuthWebActivity1 extends TitleBarActivity {
     }
 
     private class MyWebViewClient extends WebViewClient {
-        long timer = 0l;
-        boolean isInterceptRequestByResource = false;
-        boolean isInterceptRequestByJs = false;
-
+        private long timer = 0l;
+        private List<BaseInterceptor> mInterceptors;
+        //是否有cookie信息
+        private boolean isHaveCookie = false;
+        public  MyWebViewClient(Context context) {
+            this.mInterceptors = new ArrayList<>();
+            this.mInterceptors.add(new JsLoaderInterceptor(context));
+            this.mInterceptors.add(new ReSourceLoaderInterceptor(context,webReturnUrl));
+        }
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             timer = System.currentTimeMillis();
@@ -496,11 +503,7 @@ public class AuthWebActivity1 extends TitleBarActivity {
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             Log.e("拦截", "========shouldInterceptRequest(WebView view, WebResourceRequest request)======== url=  " + request.getUrl().toString());
-            if (request != null && request.getUrl() != null) {
-                return shouldInterceptRequestByMethod(view, request.getUrl().toString());
-            } else {
-                return null;
-            }
+            return shouldInterceptRequestByMethod(view, request.getUrl().toString());
         }
 
 
@@ -511,31 +514,13 @@ public class AuthWebActivity1 extends TitleBarActivity {
 
         private WebResourceResponse shouldInterceptRequestByMethod(WebView view, String url) {
             Log.e("拦截", "========shouldInterceptRequest(WebView view, String url)======== url = " + url);
-            if (!TextUtils.isEmpty(url) && Uri.parse(url).getScheme() != null && isInterceptRequestUrl(url)) {
-                String scheme = Uri.parse(url).getScheme().trim();
-                if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
-                    try {
-                        return new WebResourceResponse(null, null, null);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            WebResourceResponse result = null;
+            for (BaseInterceptor interceptor : mInterceptors) {
+                if (interceptor.canHandle(url)) {
+                    return interceptor.handle(url);
                 }
             }
             return super.shouldInterceptRequest(view, url);
-        }
-
-        public boolean isInterceptRequestUrl(String url) {
-            if (null != webReturnUrl && webReturnUrl.equals(url)) {
-                isInterceptRequestByResource = true;
-            }
-            if (url.contains("https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm")) {
-                isInterceptRequestByJs = true;
-            }
-            if ((isInterceptRequestByJs && url.contains(".js")) || (isInterceptRequestByResource && (url.contains(".css") || url.contains(".png") || url.contains(".gif") || url.contains(".ico")))) {
-                return true;
-            } else {
-                return false;
-            }
         }
 
         @Override

@@ -21,8 +21,6 @@ import android.telephony.TelephonyManager;
 import android.webkit.WebView;
 import android.widget.Toast;
 
-import com.financial.quantgroup.v2.bus.RxBus;
-import com.woodys.demo.entity.StateViewType;
 import com.woodys.demo.utils.JsonUtils;
 import com.woodys.demo.utils.Res;
 import com.woodys.demo.utils.TaskExecutor;
@@ -213,7 +211,7 @@ public class HostJsScope {
      */
     public static void webViewAuth(WebView webView, JSONObject json) {
         Context viewContext = webView.getContext();
-        Intent intent = new Intent(viewContext, AuthWebActivity1.class);
+        Intent intent = new Intent(viewContext, AuthWebActivityNew.class);
         intent.putExtra("title", Res.getString(R.string.webview_auth_title));
         HashMap<String, Object> jsonMap = null;
         try {
