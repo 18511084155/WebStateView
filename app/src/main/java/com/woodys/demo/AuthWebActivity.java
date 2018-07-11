@@ -177,7 +177,6 @@ public class AuthWebActivity extends TitleBarActivity {
         //如果访问的页面中有Javascript，则webview必须设置支持Javascript
         webSetting.setJavaScriptEnabled(true);
         webSetting.setJavaScriptCanOpenWindowsAutomatically(true);
-        webSetting.setLoadsImagesAutomatically(false);
         webSetting.setUseWideViewPort(true);
         webSetting.setLoadWithOverviewMode(true);
         // 设置可以访问文件
@@ -272,19 +271,19 @@ public class AuthWebActivity extends TitleBarActivity {
                                 }catch (Exception e){ currentProgress = -1l; }
                                 if (currentProgress==0 || (currentProgress>0 && progress>currentProgress)) {
                                     helperController.setLoadingView(item.value);
-                                }
-                                //当前假如进度是100，就延迟700ms显示加载成功
-                                if (progress >= 100) {
-                                    titleBar.postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            helperController.showSuccessView();
-                                            if (BuildConfig.DEBUG) {
-                                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                                    //当前假如进度是100，就延迟700ms显示加载成功
+                                    if (progress >= 100) {
+                                        titleBar.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                helperController.showSuccessView();
+                                                if (BuildConfig.DEBUG) {
+                                                    Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis()-appUseTime)+"ms");
+                                                }
+                                                setDownTimerschedule(4 * 1000, 2 * 1000);
                                             }
-                                            setDownTimerschedule(4 * 1000, 2 * 1000);
-                                        }
-                                    }, 500);
+                                        }, 500);
+                                    }
                                 }
                             } else {
                                 helperController.showLoadingView();

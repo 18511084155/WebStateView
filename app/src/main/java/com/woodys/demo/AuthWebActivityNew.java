@@ -267,19 +267,19 @@ public class AuthWebActivityNew extends TitleBarActivity {
                                 }
                                 if (currentProgress == 0 || (currentProgress > 0 && progress > currentProgress)) {
                                     helperController.setLoadingView(item.value);
-                                }
-                                //当前假如进度是100，就延迟700ms显示加载成功
-                                if (progress >= 100) {
-                                    titleBar.postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            helperController.showSuccessView();
-                                            if (BuildConfig.DEBUG) {
-                                                Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis() - appUseTime) + "ms");
+                                    //当前假如进度是100，就延迟700ms显示加载成功
+                                    if (progress >= 100) {
+                                        titleBar.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                helperController.showSuccessView();
+                                                if (BuildConfig.DEBUG) {
+                                                    Log.e("时间", "====timeMillis：====" + (System.currentTimeMillis() - appUseTime) + "ms");
+                                                }
+                                                setDownTimerschedule(4 * 1000, 2 * 1000);
                                             }
-                                            setDownTimerschedule(4 * 1000, 2 * 1000);
-                                        }
-                                    }, 500);
+                                        }, 500);
+                                    }
                                 }
                             } else {
                                 helperController.showLoadingView();

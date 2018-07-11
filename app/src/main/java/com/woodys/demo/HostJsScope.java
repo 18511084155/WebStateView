@@ -211,7 +211,7 @@ public class HostJsScope {
      */
     public static void webViewAuth(WebView webView, JSONObject json) {
         Context viewContext = webView.getContext();
-        Intent intent = new Intent(viewContext, AuthWebActivityNew.class);
+        Intent intent = new Intent(viewContext, AuthWebActivity.class);
         intent.putExtra("title", Res.getString(R.string.webview_auth_title));
         HashMap<String, Object> jsonMap = null;
         try {
