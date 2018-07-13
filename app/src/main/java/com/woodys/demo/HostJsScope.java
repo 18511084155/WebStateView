@@ -222,6 +222,7 @@ public class HostJsScope {
             intent.putExtra("returnUrl",(String) jsonMap.get("returnUrl"));
             intent.putExtra("userAgent",(String) jsonMap.get("userAgent"));
             intent.putExtra("injectedUrls",(String) jsonMap.get("injectedUrls"));
+            intent.putExtra("isIntercept",(Boolean) jsonMap.get("isIntercept"));
         } catch (Exception e) {
             e.printStackTrace();
         }

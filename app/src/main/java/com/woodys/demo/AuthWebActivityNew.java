@@ -77,6 +77,8 @@ public class AuthWebActivityNew extends TitleBarActivity {
     private String webJavaScript;
     private String webReturnUrl;
     private List<String> injectedUrls = null;
+
+    private boolean isIntercept=false;
     private long appUseTime = 0L;
 
     private ViewHelperController helperController;
@@ -112,6 +114,7 @@ public class AuthWebActivityNew extends TitleBarActivity {
                 injectedUrls = JsonUtils.getLists(injectedUrlsStr, String.class);
             }
             userAgent = arguments.getString("userAgent");
+            isIntercept = arguments.getBoolean("isIntercept",false);
         }
         if (!TextUtils.isEmpty(webTitle)) titleBar.setTitleText(webTitle);
 
@@ -515,9 +518,11 @@ public class AuthWebActivityNew extends TitleBarActivity {
         private WebResourceResponse shouldInterceptRequestByMethod(WebView view, String url) {
             Log.e("拦截", "========shouldInterceptRequest(WebView view, String url)======== url = " + url);
             WebResourceResponse result = null;
-            for (BaseInterceptor interceptor : mInterceptors) {
-                if (interceptor.canHandle(url)) {
-                    return interceptor.handle(url);
+            if(isIntercept) {
+                for (BaseInterceptor interceptor : mInterceptors) {
+                    if (interceptor.canHandle(url)) {
+                        return interceptor.handle(url);
+                    }
                 }
             }
             return super.shouldInterceptRequest(view, url);
