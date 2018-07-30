@@ -535,10 +535,16 @@ public class AuthWebActivityNew extends TitleBarActivity {
                 appUseTime = System.currentTimeMillis();
                 helperController.showLoadingView();
             }
-            if (!url.startsWith("tmall://") && !url.startsWith("tbopen://")) {
-                view.loadUrl(url);
+            if (url.startsWith("tmall://") || url.startsWith("tbopen://")) {
+                return true;
             }
-            return true;
+            return super.shouldOverrideUrlLoading(view,url);
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            return shouldOverrideUrlLoading(view, request.getUrl().toString());
         }
 
         @Override

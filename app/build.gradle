@@ -10,8 +10,8 @@ android {
         applicationId "com.woodys.demo"
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 6382
-        versionName "6.3.82"
+        versionCode 6383
+        versionName "6.3.83"
     }
     buildTypes {
         release {
