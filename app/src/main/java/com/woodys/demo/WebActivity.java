@@ -46,6 +46,13 @@ public class WebActivity extends Activity {
     public static final int REFRESH_AUTH_STATUS_CODE = 0x0010;
     WebView webView = null;
 
+    //String url = "http://192.168.28.30:8080/test/demo.html";
+    //String url = "http://192.168.28.218:8080/index.html";
+
+    //String url = "http://www.baidu.com/";
+    //String url ="file:///android_asset/index.html";
+    String url ="http://192.168.28.218:7020/agreement-2";
+
     private IConnectionManager mManager;
 
     @Override
@@ -84,8 +91,7 @@ public class WebActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                view.loadUrl(url);
-                return true;
+                return super.shouldOverrideUrlLoading(view,url);
             }
 
             @Override
@@ -93,15 +99,11 @@ public class WebActivity extends Activity {
                 super.onPageFinished(view, url);
             }
         });
-
-        //String url = "http://192.168.28.30:8080/test/demo.html";
-        //String url = "http://192.168.28.218:8080/index.html";
-        String url ="http://192.168.28.218:7020/agreement-2";
-        //String url = "http://www.baidu.com/";
+        Bundle arguments = getIntent().getExtras();
+        if (null != arguments) {
+            url = arguments.getString("turl");
+        }
         webView.loadUrl(url);
-
-
-        //webView.loadUrl("file:///android_asset/index.html");
 
         //初始化SocketClient，打开通道
         initSocketClient();
@@ -117,23 +119,15 @@ public class WebActivity extends Activity {
         findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(webView.getContext(), OtherWebviewActivity.class);
+                Intent intent = new Intent(WebActivity.this, TaoBaoActivity.class);
                 //用Bundle携带数据
                 Bundle bundle = new Bundle();
-                bundle.putString("turl", "https://m.xyqb.com/app-landing?registerFrom=217&channelId=1&token=c15623e8-7ca5-421c-9806-291328e0d898&appChannel=ceshi&appName=xinyongqianbao&authPage=auth-page&bindingPage=loan/card-binding");
-                bundle.putString("type", "1");
+                bundle.putString("turl",url);
                 intent.putExtras(bundle);
-                startActivityForResult(intent, Constant.RESULTZHIFUBAO);
-
+                startActivity(intent);
             }
         });
 
-        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(webView.getContext(), MainActivity.class));
-            }
-        });
     }
 
     public void initSocketClient() {

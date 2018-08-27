@@ -54,6 +54,18 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
 
+
+
+
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CAPTURE_VIDEO_OUTPUT" />
+
+
+
+
+
     <!-- Optional for location -->
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
@@ -68,7 +80,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".WebActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme">
             <intent-filter>
@@ -79,8 +91,11 @@
         </activity>
         <activity android:name=".AuthWebActivity"/>
         <activity android:name=".OtherWebviewActivity"/>
-        <activity android:name=".MainActivity"/>
+        <activity android:name=".WebActivity"/>
         <activity android:name=".AuthWebActivityNew"/>
+        <activity android:name=".CertificaWebViewActivity"/>
+        <activity android:name=".CameraWebviewActivity"/>
+        <activity android:name=".TaoBaoActivity"/>
     </application>
 
 </manifest>
